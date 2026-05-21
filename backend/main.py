@@ -274,12 +274,12 @@ def create_exam(
 
     return {
 
-        "message": "Exam created successfully",
+    "message": "Exam created successfully",
 
-        "exam_code": exam_code,
+    "exam_code": exam_code,
 
-        "exam_link": f"http://localhost:3000/exam/{exam_code}"
-    }
+    "exam_link": f"https://exam-platform-max.vercel.app/exam/{exam_code}"
+}
 
 # ----------------------------
 # GET EXAM
@@ -426,8 +426,12 @@ def get_results(request: Request):
             }
         )
 
+    response = supabase.table(
+        "results"
+    ).select("*").execute()
+
     return {
-        "results": results_db
+        "results": response.data
     }
 
 # ----------------------------
@@ -464,8 +468,12 @@ def get_logs(request: Request):
             }
         )
 
+    response = supabase.table(
+        "cheating_logs"
+    ).select("*").execute()
+
     return {
-        "logs": cheating_logs_db
+        "logs": response.data
     }
 # ----------------------------
 # ANALYTICS
