@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Papa from "papaparse";
@@ -7,7 +8,7 @@ import { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
- XAxis,
+  XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
@@ -32,55 +33,96 @@ export default function DashboardPage() {
 
   const router = useRouter();
 
-  const [results, setResults] = useState<Result[]>([]);
+  const [results, setResults] =
+    useState<Result[]>([]);
 
-  const [logs, setLogs] = useState<CheatingLog[]>([]);
+  const [logs, setLogs] =
+    useState<CheatingLog[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
+
+  // =========================
+  // AUTH CHECK
+  // =========================
 
   useEffect(() => {
 
-    const fetchDashboardData = async () => {
+    const isAdmin =
+      localStorage.getItem(
+        "admin_logged_in"
+      );
+
+    if (!isAdmin) {
+
+      router.push("/admin/login");
+      return;
+    }
+
+    fetchDashboardData();
+
+  }, []);
+
+  // =========================
+  // FETCH DATA
+  // =========================
+
+  const fetchDashboardData =
+    async () => {
 
       try {
 
-
-        
         // RESULTS
-        const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL}/results`,
-  {
-    credentials: "include",
-  }
-);
+        const response =
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/results`,
+            {
+              credentials: "include",
+            }
+          );
 
-if (response.status === 401) {
+        if (response.status === 401) {
 
-  router.push("/admin/login");
-  return;
-}
+          localStorage.removeItem(
+            "admin_logged_in"
+          );
 
-        const data = await response.json();
+          router.push("/admin/login");
+          return;
+        }
 
-        setResults(data.results);
+        const data =
+          await response.json();
+
+        setResults(
+          data.results || []
+        );
 
         // CHEATING LOGS
-        const logsResponse = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL}/cheating-logs`,
-  {
-    credentials: "include",
-  }
-);
+        const logsResponse =
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/cheating-logs`,
+            {
+              credentials: "include",
+            }
+          );
 
-if (logsResponse.status === 401) {
+        if (logsResponse.status === 401) {
 
-  router.push("/admin/login");
-  return;
-}
+          localStorage.removeItem(
+            "admin_logged_in"
+          );
 
-        const logsData = await logsResponse.json();
+          router.push("/admin/login");
+          return;
+        }
 
-        setLogs(logsData.logs);
+        const logsData =
+          await logsResponse.json();
+
+        setLogs(
+          logsData.logs || []
+        );
 
       } catch (error) {
 
@@ -89,81 +131,66 @@ if (logsResponse.status === 401) {
       } finally {
 
         setLoading(false);
-
       }
     };
 
-    
-useEffect(() => {
+  // =========================
+  // STATS
+  // =========================
 
-  const verifyAdmin =
-    async () => {
-
-      try {
-
-        const response =
-          await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/admin/verify`,
-            {
-              credentials: "include",
-            }
-          );
-
-        if (!response.ok) {
-
-          router.push("/admin/login");
-        }
-
-      } catch {
-
-        router.push("/admin/login");
-      }
-    };
-
-  verifyAdmin();
-
-}, []);
-
-    fetchDashboardData();
-
-  }, []);
-
-  // TOP SCORE
   const topScore =
     results.length > 0
-      ? Math.max(...results.map((r) => r.score))
+      ? Math.max(
+          ...results.map(
+            (r) => r.score
+          )
+        )
       : 0;
 
-  // AVERAGE SCORE
   const averageScore =
     results.length > 0
       ? (
           results.reduce(
-            (acc, curr) => acc + curr.score,
+            (acc, curr) =>
+              acc + curr.score,
             0
           ) / results.length
         ).toFixed(1)
       : "0";
 
+  // =========================
   // CHART DATA
-  const chartData = results.map((result) => ({
-    name: result.participant_name,
-    score: result.score,
-  }));
+  // =========================
 
+  const chartData =
+    results.map((result) => ({
+      name:
+        result.participant_name,
+      score: result.score,
+    }));
+
+  // =========================
   // EXPORT CSV
+  // =========================
+
   const exportCSV = () => {
 
     const csv = Papa.unparse(
+
       results.map((result) => ({
+
         Participant:
           result.participant_name,
+
         ExamCode:
           result.exam_code,
+
         Score:
           result.score,
+
         Total:
           result.total,
+
         Percentage:
           (
             (result.score /
@@ -173,13 +200,14 @@ useEffect(() => {
       }))
     );
 
-    const blob = new Blob(
-      [csv],
-      {
-        type:
-          "text/csv;charset=utf-8;",
-      }
-    );
+    const blob =
+      new Blob(
+        [csv],
+        {
+          type:
+            "text/csv;charset=utf-8;",
+        }
+      );
 
     const url =
       URL.createObjectURL(blob);
@@ -194,55 +222,83 @@ useEffect(() => {
       "exam-results.csv"
     );
 
-    document.body.appendChild(link);
+    document.body.appendChild(
+      link
+    );
 
     link.click();
 
-    document.body.removeChild(link);
+    document.body.removeChild(
+      link
+    );
+  };
+
+  // =========================
+  // LOGOUT
+  // =========================
+
+  const handleLogout = () => {
+
+    localStorage.removeItem(
+      "admin_logged_in"
+    );
+
+    router.push("/admin/login");
   };
 
   return (
+
     <main className="min-h-screen bg-black p-4 text-white sm:p-8">
 
-      {/* Header */}
+      {/* HEADER */}
+
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
         <div>
 
-  <h1 className="text-3xl font-bold sm:text-4xl">
-    Admin Dashboard
-  </h1>
+          <h1 className="text-3xl font-bold sm:text-4xl">
+            Admin Dashboard
+          </h1>
 
-  <p className="mt-2 text-gray-400">
-    Monitor exam performance
-  </p>
+          <p className="mt-2 text-gray-400">
+            Monitor exam performance
+          </p>
 
-  <div className="mt-6 flex flex-wrap gap-4">
+          {/* NAVIGATION */}
 
-    <Link
-      href="/admin/create-exam"
-      className="rounded-xl bg-purple-600 px-5 py-3 font-semibold hover:bg-purple-500"
-    >
-      Create Exam
-    </Link>
+          <div className="mt-6 flex flex-wrap gap-4">
 
-    <Link
-      href="/admin/results"
-      className="rounded-xl bg-cyan-600 px-5 py-3 font-semibold hover:bg-cyan-500"
-    >
-      Results
-    </Link>
+            <Link
+              href="/admin/create-exam"
+              className="rounded-xl bg-purple-600 px-5 py-3 font-semibold hover:bg-purple-500"
+            >
+              Create Exam
+            </Link>
 
-    <Link
-      href="/admin/analytics"
-      className="rounded-xl bg-green-600 px-5 py-3 font-semibold hover:bg-green-500"
-    >
-      Analytics
-    </Link>
+            <Link
+              href="/admin/results"
+              className="rounded-xl bg-cyan-600 px-5 py-3 font-semibold hover:bg-cyan-500"
+            >
+              Results
+            </Link>
 
-  </div>
+            <Link
+              href="/admin/analytics"
+              className="rounded-xl bg-green-600 px-5 py-3 font-semibold hover:bg-green-500"
+            >
+              Analytics
+            </Link>
 
-</div>
+            <button
+              onClick={handleLogout}
+              className="rounded-xl bg-red-600 px-5 py-3 font-semibold hover:bg-red-500"
+            >
+              Logout
+            </button>
+
+          </div>
+
+        </div>
 
         <button
           onClick={exportCSV}
@@ -253,7 +309,8 @@ useEffect(() => {
 
       </div>
 
-      {/* Stats */}
+      {/* STATS */}
+
       <section className="mt-10 grid gap-6 md:grid-cols-3">
 
         <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
@@ -294,7 +351,8 @@ useEffect(() => {
 
       </section>
 
-      {/* Analytics */}
+      {/* ANALYTICS */}
+
       <section className="mt-12 rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-8">
 
         <h2 className="text-2xl font-semibold">
@@ -331,7 +389,8 @@ useEffect(() => {
 
       </section>
 
-      {/* Suspicious Activity */}
+      {/* CHEATING LOGS */}
+
       <section className="mt-12 rounded-3xl border border-red-500/20 bg-red-500/5 p-4 sm:p-8">
 
         <h2 className="text-2xl font-semibold text-red-400">
@@ -384,8 +443,7 @@ useEffect(() => {
                   >
 
                     <td className="py-4">
-                      {log.participant_name ||
-                        "Unknown"}
+                      {log.participant_name}
                     </td>
 
                     <td>
@@ -416,7 +474,8 @@ useEffect(() => {
 
       </section>
 
-      {/* Leaderboard */}
+      {/* LEADERBOARD */}
+
       <section className="mt-12 rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-8">
 
         <h2 className="text-2xl font-semibold">
@@ -491,14 +550,14 @@ useEffect(() => {
 
                         <td>
 
-  <Link
-    href={`/admin/analytics/${result.exam_code}`}
-    className="text-purple-400 hover:underline"
-  >
-    {result.exam_code}
-  </Link>
+                          <Link
+                            href={`/admin/analytics/${result.exam_code}`}
+                            className="text-purple-400 hover:underline"
+                          >
+                            {result.exam_code}
+                          </Link>
 
-</td>
+                        </td>
 
                         <td>
                           {result.score}/
