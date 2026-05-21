@@ -94,6 +94,35 @@ if (logsResponse.status === 401) {
     };
 
     
+useEffect(() => {
+
+  const verifyAdmin =
+    async () => {
+
+      try {
+
+        const response =
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/admin/verify`,
+            {
+              credentials: "include",
+            }
+          );
+
+        if (!response.ok) {
+
+          router.push("/admin/login");
+        }
+
+      } catch {
+
+        router.push("/admin/login");
+      }
+    };
+
+  verifyAdmin();
+
+}, []);
 
     fetchDashboardData();
 
@@ -180,15 +209,40 @@ if (logsResponse.status === 401) {
 
         <div>
 
-          <h1 className="text-3xl font-bold sm:text-4xl">
-            Admin Dashboard
-          </h1>
+  <h1 className="text-3xl font-bold sm:text-4xl">
+    Admin Dashboard
+  </h1>
 
-          <p className="mt-2 text-gray-400">
-            Monitor exam performance
-          </p>
+  <p className="mt-2 text-gray-400">
+    Monitor exam performance
+  </p>
 
-        </div>
+  <div className="mt-6 flex flex-wrap gap-4">
+
+    <Link
+      href="/admin/create-exam"
+      className="rounded-xl bg-purple-600 px-5 py-3 font-semibold hover:bg-purple-500"
+    >
+      Create Exam
+    </Link>
+
+    <Link
+      href="/admin/results"
+      className="rounded-xl bg-cyan-600 px-5 py-3 font-semibold hover:bg-cyan-500"
+    >
+      Results
+    </Link>
+
+    <Link
+      href="/admin/analytics"
+      className="rounded-xl bg-green-600 px-5 py-3 font-semibold hover:bg-green-500"
+    >
+      Analytics
+    </Link>
+
+  </div>
+
+</div>
 
         <button
           onClick={exportCSV}

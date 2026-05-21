@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 type Question = {
   question: string;
@@ -12,6 +13,8 @@ type Question = {
 };
 
 export default function CreateExamPage() {
+
+  const router = useRouter();
 
   // AI STATES
   const [topic, setTopic] =
@@ -69,6 +72,36 @@ export default function CreateExamPage() {
       },
     ]);
   };
+
+  useEffect(() => {
+
+  const verifyAdmin =
+    async () => {
+
+      try {
+
+        const response =
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/admin/verify`,
+            {
+              credentials: "include",
+            }
+          );
+
+        if (!response.ok) {
+
+          router.push("/admin/login");
+        }
+
+      } catch {
+
+        router.push("/admin/login");
+      }
+    };
+
+  verifyAdmin();
+
+}, []);
 
   // AI GENERATION
   const generateWithAI =

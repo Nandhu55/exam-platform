@@ -746,3 +746,19 @@ Return EXACTLY in this format:
         return {
             "error": str(e)
         }
+    
+@app.get("/admin/verify")
+def verify_admin_route(request: Request):
+
+    if not verify_admin(request):
+
+        return JSONResponse(
+            status_code=401,
+            content={
+                "authenticated": False
+            }
+        )
+
+    return {
+        "authenticated": True
+    }
