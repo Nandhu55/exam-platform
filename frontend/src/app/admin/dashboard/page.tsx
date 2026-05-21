@@ -54,14 +54,29 @@ export default function DashboardPage() {
   }
 );
 
+if (response.status === 401) {
+
+  router.push("/admin/login");
+  return;
+}
+
         const data = await response.json();
 
         setResults(data.results);
 
         // CHEATING LOGS
         const logsResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/cheating-logs`
-        );
+  `${process.env.NEXT_PUBLIC_API_URL}/cheating-logs`,
+  {
+    credentials: "include",
+  }
+);
+
+if (logsResponse.status === 401) {
+
+  router.push("/admin/login");
+  return;
+}
 
         const logsData = await logsResponse.json();
 
@@ -78,14 +93,7 @@ export default function DashboardPage() {
       }
     };
 
-    const cookieExists =
-  document.cookie.includes("admin_token");
-
-if (!cookieExists) {
-
-  router.push("/admin/login");
-  return;
-}
+    
 
     fetchDashboardData();
 
