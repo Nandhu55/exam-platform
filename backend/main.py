@@ -1,12 +1,10 @@
-from jose import jwt, JWTError
 from fastapi import (
     FastAPI,
-    Depends,
-    Cookie,
-    HTTPException
+    
 )
 from fastapi.responses import JSONResponse
 from fastapi import Response
+from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client
@@ -70,9 +68,6 @@ app.add_middleware(
 # AUTH CONFIG
 # ----------------------------
 
-SECRET_KEY = "supersecretkey"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_HOURS = 12
 
 ADMIN_EMAIL = "admin@gmail.com"
 ADMIN_PASSWORD = "admin123"
@@ -81,64 +76,19 @@ ADMIN_PASSWORD = "admin123"
 # JWT FUNCTIONS
 # ----------------------------
 
-def create_access_token(data: dict):
 
-    to_encode = data.copy()
 
-    expire = datetime.utcnow() + timedelta(
-        hours=ACCESS_TOKEN_EXPIRE_HOURS
+def verify_admin(request: Request):
+
+    token = request.cookies.get(
+        "admin_token"
     )
 
-    to_encode.update({
-        "exp": expire
-    })
+    if token != "admin_logged_in":
 
-    encoded_jwt = jwt.encode(
-        to_encode,
-        SECRET_KEY,
-        algorithm=ALGORITHM
-    )
+        return False
 
-    return encoded_jwt
-
-
-def verify_admin_token(
-    admin_token: str = Cookie(None)
-):
-
-    if not admin_token:
-
-        raise HTTPException(
-            status_code=401,
-            detail="Not authenticated"
-        )
-
-    try:
-
-        payload = jwt.decode(
-            admin_token,
-            SECRET_KEY,
-            algorithms=[ALGORITHM]
-        )
-
-        email = payload.get("sub")
-
-        if email != ADMIN_EMAIL:
-
-            raise HTTPException(
-                status_code=401,
-                detail="Invalid token"
-            )
-
-        return email
-
-    except JWTError:
-
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid token"
-        )
-
+    return True
 # ----------------------------
 # MODELS
 # ----------------------------
@@ -277,13 +227,20 @@ def admin_logout():
 # ----------------------------
 # CREATE EXAM
 # ----------------------------
-
 @app.post("/create-exam")
 def create_exam(
     exam: Exam,
-    _: str = Depends(verify_admin_token)
+    request: Request
 ):
 
+    if not verify_admin(request):
+
+        return JSONResponse(
+            status_code=401,
+            content={
+                "message": "Unauthorized"
+            }
+        )
     exam_code = str(uuid.uuid4())[:8]
 
     # SAVE EXAM
@@ -458,16 +415,19 @@ def submit_exam(submission: Submission):
 # ----------------------------
 
 @app.get("/results")
-def get_results(
-    _: str = Depends(verify_admin_token)
-):
+def get_results(request: Request):
 
-    response = supabase.table(
-        "results"
-    ).select("*").execute()
+    if not verify_admin(request):
+
+        return JSONResponse(
+            status_code=401,
+            content={
+                "message": "Unauthorized"
+            }
+        )
 
     return {
-        "results": response.data
+        "results": results_db
     }
 
 # ----------------------------
@@ -493,18 +453,20 @@ def log_cheating(log: CheatingLog):
 
 
 @app.get("/cheating-logs")
-def get_cheating_logs(
-    _: str = Depends(verify_admin_token)
-):
+def get_logs(request: Request):
 
-    logs_response = supabase.table(
-        "cheating_logs"
-    ).select("*").execute()
+    if not verify_admin(request):
+
+        return JSONResponse(
+            status_code=401,
+            content={
+                "message": "Unauthorized"
+            }
+        )
 
     return {
-        "logs": logs_response.data
+        "logs": cheating_logs_db
     }
-
 # ----------------------------
 # ANALYTICS
 # ----------------------------
@@ -512,8 +474,17 @@ def get_cheating_logs(
 @app.get("/exam-analytics/{exam_code}")
 def exam_analytics(
     exam_code: str,
-    _: str = Depends(verify_admin_token)
+    request: Request
 ):
+
+    if not verify_admin(request):
+
+        return JSONResponse(
+            status_code=401,
+            content={
+                "message": "Unauthorized"
+            }
+        )
 
     questions_response = supabase.table(
         "questions"
@@ -667,8 +638,17 @@ def get_attempt(attempt_id: int):
 @app.post("/generate-ai-questions")
 async def generate_ai_questions(
     data: AIQuestionRequest,
-    _: str = Depends(verify_admin_token)
+    request: Request
 ):
+
+    if not verify_admin(request):
+
+        return JSONResponse(
+            status_code=401,
+            content={
+                "message": "Unauthorized"
+            }
+        )
 
     prompt = f"""
 Generate {data.question_count} multiple choice questions about {data.topic}.
