@@ -56,6 +56,7 @@ app.add_middleware(
 
     allow_origins=[
         "http://localhost:3000",
+        "https://exam-platform-max.vercel.app",
     ],
 
     allow_credentials=True,
@@ -237,6 +238,7 @@ def admin_login(
 
     response.set_cookie(
     key="admin_token",
+
     value=token,
 
     httponly=True,
