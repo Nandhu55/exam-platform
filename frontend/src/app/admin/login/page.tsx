@@ -1,0 +1,135 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+export default function AdminLoginPage() {
+
+  const router = useRouter();
+
+  const [email, setEmail] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
+ const handleLogin = async () => {
+
+  try {
+
+    setLoading(true);
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/admin/login`,
+      {
+        method: "POST",
+
+        credentials: "include",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+
+      alert(data.detail || "Login failed");
+      return;
+    }
+
+  alert("Login successful");
+
+// WAIT 500ms FOR COOKIE STORAGE
+setTimeout(() => {
+
+  window.location.href =
+    "/admin/dashboard";
+
+}, 500);
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("Something went wrong");
+
+  } finally {
+
+    setLoading(false);
+  }
+};
+
+  return (
+
+    <main className="flex min-h-screen items-center justify-center bg-[#050816] p-6 text-white">
+
+      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-10">
+
+        <h1 className="mb-3 text-4xl font-black">
+
+          Admin Login
+
+        </h1>
+
+        <p className="mb-8 text-gray-400">
+
+          Secure access to exam dashboard
+
+        </p>
+
+        <div className="space-y-5">
+
+          <input
+            type="email"
+            placeholder="Admin Email"
+            value={email}
+            onChange={(e) =>
+              setEmail(
+                e.target.value
+              )
+            }
+            className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 outline-none"
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) =>
+              setPassword(
+                e.target.value
+              )
+            }
+            className="w-full rounded-2xl border border-white/10 bg-black/40 px-5 py-4 outline-none"
+          />
+
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
+          >
+
+            {loading
+              ? "Logging in..."
+              : "Login"}
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </main>
+  );
+}
