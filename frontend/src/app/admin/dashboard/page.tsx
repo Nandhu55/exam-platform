@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Papa from "papaparse";
 import { useEffect, useState } from "react";
 
@@ -29,6 +30,8 @@ type CheatingLog = {
 
 export default function DashboardPage() {
 
+  const router = useRouter();
+
   const [results, setResults] = useState<Result[]>([]);
 
   const [logs, setLogs] = useState<CheatingLog[]>([]);
@@ -41,6 +44,8 @@ export default function DashboardPage() {
 
       try {
 
+
+        
         // RESULTS
         const response = await fetch(
   `${process.env.NEXT_PUBLIC_API_URL}/results`,
@@ -72,6 +77,15 @@ export default function DashboardPage() {
 
       }
     };
+
+    const cookieExists =
+  document.cookie.includes("admin_token");
+
+if (!cookieExists) {
+
+  router.push("/admin/login");
+  return;
+}
 
     fetchDashboardData();
 
