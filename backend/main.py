@@ -964,3 +964,67 @@ FORMAT:
         return {
             "error": str(e)
         }
+
+
+# ----------------------------
+# SAVE ADAPTIVE ATTEMPT
+# ----------------------------
+
+class SaveAdaptiveAttempt(BaseModel):
+
+    adaptive_exam_id: str
+
+    participant_name: str
+
+    question_number: int
+
+    question: str
+
+    selected_answer: str
+
+    correct_answer: str
+
+    is_correct: bool
+
+    difficulty: int
+
+
+@app.post("/save-adaptive-attempt")
+def save_adaptive_attempt(
+    data: SaveAdaptiveAttempt
+):
+
+    supabase.table(
+        "adaptive_attempts"
+    ).insert({
+
+        "adaptive_exam_id":
+            data.adaptive_exam_id,
+
+        "participant_name":
+            data.participant_name,
+
+        "question_number":
+            data.question_number,
+
+        "question":
+            data.question,
+
+        "selected_answer":
+            data.selected_answer,
+
+        "correct_answer":
+            data.correct_answer,
+
+        "is_correct":
+            data.is_correct,
+
+        "difficulty":
+            data.difficulty
+
+    }).execute()
+
+    return {
+        "message":
+            "Attempt saved"
+    }        

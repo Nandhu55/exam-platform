@@ -119,7 +119,8 @@ export default function AdaptiveExamPage() {
   // SUBMIT ANSWER
   // =========================
 
-  const submitAnswer = () => {
+  const submitAnswer =
+  async () => {
 
     if (!selectedAnswer) {
 
@@ -134,10 +135,59 @@ export default function AdaptiveExamPage() {
       selectedAnswer ===
       question.correctAnswer;
 
+    // SAVE ATTEMPT
+
+    try {
+
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/save-adaptive-attempt`,
+        {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+
+            adaptive_exam_id:
+              exam.adaptive_exam_id,
+
+            participant_name:
+              "Student",
+
+            question_number:
+              questionNumber,
+
+            question:
+              question.question,
+
+            selected_answer:
+              selectedAnswer,
+
+            correct_answer:
+              question.correctAnswer,
+
+            is_correct:
+              isCorrect,
+
+            difficulty:
+              difficulty
+          }),
+        }
+      );
+
+    } catch (error) {
+
+      console.error(error);
+    }
+
+    // DIFFICULTY ENGINE
+
     let newDifficulty =
       difficulty;
-
-    // INCREASE / DECREASE DIFFICULTY
 
     if (isCorrect) {
 
@@ -148,7 +198,7 @@ export default function AdaptiveExamPage() {
       newDifficulty -= 1;
     }
 
-    // LIMIT DIFFICULTY
+    // LIMITS
 
     if (newDifficulty < 1) {
 
