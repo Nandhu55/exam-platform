@@ -27,6 +27,11 @@ export default function AdaptiveExamPage() {
   const [questionNumber, setQuestionNumber] =
     useState(1);
 
+  const [score, setScore] =
+  useState(0);
+
+const [examFinished, setExamFinished] =
+  useState(false);
   // =========================
   // FETCH EXAM
   // =========================
@@ -193,12 +198,16 @@ export default function AdaptiveExamPage() {
 
       if (isCorrect) {
 
-        newDifficulty += 1;
+  newDifficulty += 1;
 
-      } else {
+  setScore(
+    (prev) => prev + 1
+  );
 
-        newDifficulty -= 1;
-      }
+} else {
+
+  newDifficulty -= 1;
+}
 
       // LIMITS
 
@@ -222,16 +231,16 @@ export default function AdaptiveExamPage() {
       // EXAM FINISHED
 
       if (
-        nextQuestionNumber >
-        exam.total_questions
-      ) {
+  nextQuestionNumber >
+  exam.total_questions
+) {
 
-        alert(
-          "Adaptive Exam Completed"
-        );
+  setExamFinished(true);
 
-        return;
-      }
+  setQuestion(null);
+
+  return;
+}
 
       setQuestionNumber(
         nextQuestionNumber
@@ -261,6 +270,81 @@ export default function AdaptiveExamPage() {
     );
   }
 
+  if (examFinished) {
+
+  const percentage =
+    (
+      (score /
+        exam.total_questions) *
+      100
+    ).toFixed(0);
+
+  return (
+
+    <main className="flex min-h-screen items-center justify-center bg-[#050816] p-8 text-white">
+
+      <div className="w-full max-w-3xl rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
+
+        <h1 className="text-5xl font-black text-cyan-400">
+
+          Adaptive Exam Completed
+
+        </h1>
+
+        <p className="mt-8 text-3xl font-bold">
+
+          Score:
+          {" "}
+          {score}
+          {" / "}
+          {exam.total_questions}
+
+        </p>
+
+        <p className="mt-4 text-2xl text-green-400">
+
+          {percentage}%
+
+        </p>
+
+        <div className="mt-10 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-8">
+
+          <h2 className="text-2xl font-bold">
+
+            AI Performance Analysis
+
+          </h2>
+
+          <p className="mt-6 text-lg leading-9 text-gray-300">
+
+            {percentage >= "80"
+              ? "Excellent performance. Strong conceptual understanding and adaptive learning capability detected."
+
+              : percentage >= "50"
+              ? "Good performance. Some medium and advanced concepts require improvement."
+
+              : "Performance needs improvement. Focus on fundamentals and practice adaptive difficulty questions regularly."}
+
+          </p>
+
+        </div>
+
+        <button
+          onClick={() =>
+            window.location.href = "/"
+          }
+          className="mt-10 rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-10 py-4 text-xl font-bold"
+        >
+
+          Go To Home
+
+        </button>
+
+      </div>
+
+    </main>
+  );
+}
   // =========================
   // NOT FOUND
   // =========================
