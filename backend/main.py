@@ -169,38 +169,35 @@ def admin_login(
     email = data.get("email")
     password = data.get("password")
 
-    # CHANGE THESE
     ADMIN_EMAIL = "admin@gmail.com"
     ADMIN_PASSWORD = "admin123"
 
+    # INVALID LOGIN
     if (
         email != ADMIN_EMAIL
         or password != ADMIN_PASSWORD
     ):
 
-        return {
-            "success": False,
-            "message": "Invalid credentials"
-        }
+        return JSONResponse(
+            status_code=401,
+            content={
+                "success": False,
+                "message": "Invalid credentials"
+            }
+        )
 
-    # SIMPLE TOKEN
+    # VALID LOGIN
     token = "admin_logged_in"
 
     response.set_cookie(
-    key="admin_token",
-
-    value=token,
-
-    httponly=True,
-
-    secure=True,
-
-    samesite="none",
-
-    max_age=60 * 60 * 24,
-
-    path="/"
-)
+        key="admin_token",
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=60 * 60 * 24,
+        path="/"
+    )
 
     return {
         "success": True,
