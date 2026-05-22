@@ -666,6 +666,30 @@ def get_attempt(attempt_id: int):
     return response.data[0]
 
 # ----------------------------
+# GET ADAPTIVE EXAM
+# ----------------------------
+
+@app.get("/adaptive-exam/{adaptive_exam_id}")
+def get_adaptive_exam(
+    adaptive_exam_id: str
+):
+
+    response = supabase.table(
+        "adaptive_exams"
+    ).select("*").eq(
+        "adaptive_exam_id",
+        adaptive_exam_id
+    ).execute()
+
+    if not response.data:
+
+        return {
+            "error": "Adaptive exam not found"
+        }
+
+    return response.data[0]
+
+# ----------------------------
 # AI QUESTION GENERATION
 # ----------------------------
 
@@ -824,6 +848,8 @@ def create_adaptive_exam(
         "adaptive_exam_id":
             adaptive_exam_id
     }
+
+
 
   
 @app.get("/admin/verify")
