@@ -16,59 +16,64 @@ export default function AdminLoginPage() {
   const [loading, setLoading] =
     useState(false);
 
- const handleLogin = async () => {
+  const handleLogin = async () => {
 
-  try {
+    try {
 
-    setLoading(true);
+      setLoading(true);
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/admin/login`,
-      {
-        method: "POST",
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/login`,
+        {
+          method: "POST",
 
-        credentials: "include",
+          credentials: "include",
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data =
+        await response.json();
+
+      // INVALID LOGIN
+      if (!response.ok) {
+
+        alert(
+          data.message ||
+          "Invalid credentials"
+        );
+
+        return;
       }
-    );
 
-    const data = await response.json();
+      // SUCCESS
+      alert("Login successful");
 
-    if (!response.ok) {
+      router.push(
+        "/admin/dashboard"
+      );
 
-      alert(data.detail || "Login failed");
-      return;
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Something went wrong"
+      );
+
+    } finally {
+
+      setLoading(false);
     }
-
-  alert("Login successful");
-
-// WAIT 500ms FOR COOKIE STORAGE
-setTimeout(() => {
-
-  window.location.href =
-    "/admin/dashboard";
-
-}, 500);
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert("Something went wrong");
-
-  } finally {
-
-    setLoading(false);
-  }
-};
+  };
 
   return (
 
@@ -117,7 +122,7 @@ setTimeout(() => {
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
+            className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold disabled:opacity-50"
           >
 
             {loading

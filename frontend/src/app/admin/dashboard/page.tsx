@@ -43,94 +43,105 @@ export default function DashboardPage() {
     useState(true);
 
   // =========================
-  // AUTH CHECK
+  // FETCH DASHBOARD DATA
   // =========================
 
   useEffect(() => {
 
-    const isAdmin =
-      localStorage.getItem(
-        "admin_logged_in"
-      );
+    const fetchDashboardData =
+      async () => {
 
-    if (!isAdmin) {
+        try {
 
-      router.push("/admin/login");
-      return;
-    }
+          // =====================
+          // RESULTS
+          // =====================
+
+          const response =
+            await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/results`,
+              {
+                credentials: "include",
+              }
+            );
+
+          // NOT LOGGED IN
+          if (response.status === 401) {
+
+            router.push("/admin/login");
+            return;
+          }
+
+          const data =
+            await response.json();
+
+          setResults(
+            data.results || []
+          );
+
+          // =====================
+          // CHEATING LOGS
+          // =====================
+
+          const logsResponse =
+            await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/cheating-logs`,
+              {
+                credentials: "include",
+              }
+            );
+
+          if (logsResponse.status === 401) {
+
+            router.push("/admin/login");
+            return;
+          }
+
+          const logsData =
+            await logsResponse.json();
+
+          setLogs(
+            logsData.logs || []
+          );
+
+        } catch (error) {
+
+          console.error(error);
+
+        } finally {
+
+          setLoading(false);
+        }
+      };
 
     fetchDashboardData();
 
-  }, []);
+  }, [router]);
 
   // =========================
-  // FETCH DATA
+  // LOGOUT
   // =========================
 
-  const fetchDashboardData =
+  const handleLogout =
     async () => {
 
       try {
 
-        // RESULTS
-        const response =
-          await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/results`,
-            {
-              credentials: "include",
-            }
-          );
-
-        if (response.status === 401) {
-
-          localStorage.removeItem(
-            "admin_logged_in"
-          );
-
-          router.push("/admin/login");
-          return;
-        }
-
-        const data =
-          await response.json();
-
-        setResults(
-          data.results || []
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/logout`,
+          {
+            method: "POST",
+            credentials: "include",
+          }
         );
 
-        // CHEATING LOGS
-        const logsResponse =
-          await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/cheating-logs`,
-            {
-              credentials: "include",
-            }
-          );
-
-        if (logsResponse.status === 401) {
-
-          localStorage.removeItem(
-            "admin_logged_in"
-          );
-
-          router.push("/admin/login");
-          return;
-        }
-
-        const logsData =
-          await logsResponse.json();
-
-        setLogs(
-          logsData.logs || []
+        router.push(
+          "/admin/login"
         );
 
       } catch (error) {
 
         console.error(error);
-
-      } finally {
-
-        setLoading(false);
       }
     };
 
@@ -233,19 +244,6 @@ export default function DashboardPage() {
     );
   };
 
-  // =========================
-  // LOGOUT
-  // =========================
-
-  const handleLogout = () => {
-
-    localStorage.removeItem(
-      "admin_logged_in"
-    );
-
-    router.push("/admin/login");
-  };
-
   return (
 
     <main className="min-h-screen bg-black p-4 text-white sm:p-8">
@@ -273,20 +271,6 @@ export default function DashboardPage() {
               className="rounded-xl bg-purple-600 px-5 py-3 font-semibold hover:bg-purple-500"
             >
               Create Exam
-            </Link>
-
-            <Link
-              href="/admin/results"
-              className="rounded-xl bg-cyan-600 px-5 py-3 font-semibold hover:bg-cyan-500"
-            >
-              Results
-            </Link>
-
-            <Link
-              href="/admin/analytics"
-              className="rounded-xl bg-green-600 px-5 py-3 font-semibold hover:bg-green-500"
-            >
-              Analytics
             </Link>
 
             <button
