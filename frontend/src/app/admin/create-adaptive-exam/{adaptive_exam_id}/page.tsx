@@ -17,9 +17,12 @@ export default function AdaptiveExamPage() {
 
   useEffect(() => {
 
-    fetchAdaptiveExam();
+    if (examId) {
 
-  }, []);
+      fetchAdaptiveExam();
+    }
+
+  }, [examId]);
 
   const fetchAdaptiveExam =
     async () => {
@@ -50,9 +53,21 @@ export default function AdaptiveExamPage() {
 
     return (
 
-      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-white">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-white text-2xl">
 
         Loading Adaptive Exam...
+
+      </main>
+    );
+  }
+
+  if (!exam || exam.error) {
+
+    return (
+
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-red-400 text-2xl">
+
+        Adaptive Exam Not Found
 
       </main>
     );
@@ -70,29 +85,39 @@ export default function AdaptiveExamPage() {
 
         </h1>
 
-        <p className="mt-4 text-gray-400">
+        <p className="mt-6 text-xl text-cyan-400">
 
-          Topic: {exam?.topic}
+          Exam ID:
+          {" "}
+          {exam.adaptive_exam_id}
 
         </p>
 
-        <p className="mt-2 text-gray-400">
+        <p className="mt-4 text-gray-300">
+
+          Topic:
+          {" "}
+          {exam.topic}
+
+        </p>
+
+        <p className="mt-2 text-gray-300">
 
           Total Questions:
           {" "}
-          {exam?.total_questions}
+          {exam.total_questions}
 
         </p>
 
-        <p className="mt-2 text-gray-400">
+        <p className="mt-2 text-gray-300">
 
           Difficulty Range:
           {" "}
-          {exam?.min_difficulty}
+          {exam.min_difficulty}
           {" "}
           →
           {" "}
-          {exam?.max_difficulty}
+          {exam.max_difficulty}
 
         </p>
 
@@ -104,10 +129,13 @@ export default function AdaptiveExamPage() {
 
           </h2>
 
-          <p className="mt-4 text-gray-300">
+          <p className="mt-4 text-gray-300 leading-8">
 
+            The adaptive AI system is initialized.
+            <br />
             Next step:
-            Generate first AI question dynamically.
+            generate the first dynamic question
+            based on the selected topic and difficulty.
 
           </p>
 
