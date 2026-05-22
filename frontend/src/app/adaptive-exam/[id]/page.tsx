@@ -120,127 +120,130 @@ export default function AdaptiveExamPage() {
   // =========================
 
   const submitAnswer =
-  async () => {
+    async () => {
 
-    if (!selectedAnswer) {
+      if (!selectedAnswer) {
 
-      alert(
-        "Please select an answer"
+        alert(
+          "Please select an answer"
+        );
+
+        return;
+      }
+
+      const isCorrect =
+        selectedAnswer ===
+        question.correctAnswer;
+
+      // SAVE ATTEMPT
+
+      try {
+
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/save-adaptive-attempt`,
+          {
+
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+
+              adaptive_exam_id:
+                exam.adaptive_exam_id,
+
+              participant_name:
+                "Student",
+
+              question_number:
+                questionNumber,
+
+              question:
+                question.question,
+
+              selected_answer:
+                selectedAnswer,
+
+              correct_answer:
+                question.correctAnswer,
+
+              is_correct:
+                isCorrect,
+
+              difficulty:
+                difficulty
+            }),
+          }
+        );
+
+      } catch (error) {
+
+        console.error(error);
+      }
+
+      // =========================
+      // DIFFICULTY ENGINE
+      // =========================
+
+      let newDifficulty =
+        difficulty;
+
+      if (isCorrect) {
+
+        newDifficulty += 1;
+
+      } else {
+
+        newDifficulty -= 1;
+      }
+
+      // LIMITS
+
+      if (newDifficulty < 1) {
+
+        newDifficulty = 1;
+      }
+
+      if (newDifficulty > 5) {
+
+        newDifficulty = 5;
+      }
+
+      setDifficulty(
+        newDifficulty
       );
 
-      return;
-    }
+      const nextQuestionNumber =
+        questionNumber + 1;
 
-    const isCorrect =
-      selectedAnswer ===
-      question.correctAnswer;
+      // EXAM FINISHED
 
-    // SAVE ATTEMPT
+      if (
+        nextQuestionNumber >
+        exam.total_questions
+      ) {
 
-    try {
+        alert(
+          "Adaptive Exam Completed"
+        );
 
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/save-adaptive-attempt`,
-        {
+        return;
+      }
 
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-
-            adaptive_exam_id:
-              exam.adaptive_exam_id,
-
-            participant_name:
-              "Student",
-
-            question_number:
-              questionNumber,
-
-            question:
-              question.question,
-
-            selected_answer:
-              selectedAnswer,
-
-            correct_answer:
-              question.correctAnswer,
-
-            is_correct:
-              isCorrect,
-
-            difficulty:
-              difficulty
-          }),
-        }
+      setQuestionNumber(
+        nextQuestionNumber
       );
 
-    } catch (error) {
+      setSelectedAnswer("");
 
-      console.error(error);
-    }
-
-    // DIFFICULTY ENGINE
-
-    let newDifficulty =
-      difficulty;
-
-    if (isCorrect) {
-
-      newDifficulty += 1;
-
-    } else {
-
-      newDifficulty -= 1;
-    }
-
-    // LIMITS
-
-    if (newDifficulty < 1) {
-
-      newDifficulty = 1;
-    }
-
-    if (newDifficulty > 5) {
-
-      newDifficulty = 5;
-    }
-
-    setDifficulty(
-      newDifficulty
-    );
-
-    const nextQuestionNumber =
-  questionNumber + 1;
-
-// EXAM FINISHED
-
-if (
-  nextQuestionNumber >
-  exam.total_questions
-) {
-
-  alert(
-    "Adaptive Exam Completed"
-  );
-
-  return;
-}
-
-setQuestionNumber(
-  nextQuestionNumber
-);
-
-setSelectedAnswer("");
-
-generateQuestion(
-  exam.topic,
-  newDifficulty
-);
+      generateQuestion(
+        exam.topic,
+        newDifficulty
+      );
+    };
 
   // =========================
   // LOADING STATE
