@@ -243,7 +243,7 @@ generateQuestion(
 );
 
   // =========================
-  // LOADING
+  // LOADING STATE
   // =========================
 
   if (loading) {
