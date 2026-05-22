@@ -1042,4 +1042,128 @@ def save_adaptive_attempt(
     return {
         "message":
             "Attempt saved"
-    }        
+    }       
+
+
+# ----------------------------
+# AI PERFORMANCE REPORT
+# ----------------------------
+
+@app.get("/adaptive-report/{student_name}")
+async def adaptive_report(
+    student_name: str
+):
+
+    response = supabase.table(
+        "adaptive_attempts"
+    ).select("*").eq(
+        "participant_name",
+        student_name
+    ).execute()
+
+    attempts = response.data
+
+    if not attempts:
+
+        return {
+            "error": "No attempts found"
+        }
+
+    total_questions = len(attempts)
+
+    correct_answers = len([
+        a for a in attempts
+        if a["is_correct"]
+    ])
+
+    wrong_answers = (
+        total_questions -
+        correct_answers
+    )
+
+    average_difficulty = round(
+
+        sum(
+            a["difficulty"]
+            for a in attempts
+        ) / total_questions,
+
+        2
+    )
+
+    prompt = f"""
+Analyze this student performance.
+
+Student:
+{student_name}
+
+Total Questions:
+{total_questions}
+
+Correct Answers:
+{correct_answers}
+
+Wrong Answers:
+{wrong_answers}
+
+Average Difficulty:
+{average_difficulty}
+
+Generate:
+1. Strengths
+2. Weaknesses
+3. Improvement Suggestions
+4. Overall Performance Level
+
+Keep response professional.
+"""
+
+    try:
+
+        completion = client.chat.completions.create(
+
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+
+            temperature=0.7
+        )
+
+        ai_report = (
+            completion
+            .choices[0]
+            .message
+            .content
+        )
+
+        return {
+
+            "student_name":
+                student_name,
+
+            "total_questions":
+                total_questions,
+
+            "correct_answers":
+                correct_answers,
+
+            "wrong_answers":
+                wrong_answers,
+
+            "average_difficulty":
+                average_difficulty,
+
+            "ai_report":
+                ai_report
+        }
+
+    except Exception as e:
+
+        return {
+            "error": str(e)
+        }
