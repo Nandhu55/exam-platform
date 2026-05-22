@@ -53,7 +53,7 @@ export default function AdaptiveExamPage() {
 
     return (
 
-      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-white text-2xl">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-2xl text-white">
 
         Loading Adaptive Exam...
 
@@ -65,7 +65,7 @@ export default function AdaptiveExamPage() {
 
     return (
 
-      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-red-400 text-2xl">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-2xl text-red-400">
 
         Adaptive Exam Not Found
 
@@ -129,13 +129,14 @@ export default function AdaptiveExamPage() {
 
           </h2>
 
-          <p className="mt-4 text-gray-300 leading-8">
+          <p className="mt-4 leading-8 text-gray-300">
 
             The adaptive AI system is initialized.
             <br />
+
             Next step:
-            generate the first dynamic question
-            based on the selected topic and difficulty.
+            dynamically generate questions
+            based on student performance.
 
           </p>
 
