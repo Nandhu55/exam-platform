@@ -143,6 +143,35 @@ class AdminLogin(BaseModel):
     email: str
     password: str
 
+class AdaptiveExam(BaseModel):
+
+    topic: str
+    total_questions: int
+    min_difficulty: int
+    max_difficulty: int
+
+
+class AdaptiveQuestionRequest(BaseModel):
+
+    topic: str
+    difficulty: int
+
+
+class AdaptiveAnswer(BaseModel):
+
+    session_id: str
+
+    question: str
+
+    selected_answer: str
+
+    correct_answer: str
+
+    is_correct: bool
+
+    difficulty: int
+
+
 # ----------------------------
 # HOME
 # ----------------------------
@@ -195,7 +224,7 @@ def admin_login(
         httponly=True,
         secure=True,
         samesite="none",
-        max_age=60 * 60 * 24,
+        max_age=60 * 60,
         path="/"
     )
 
@@ -744,6 +773,59 @@ Return EXACTLY in this format:
             "error": str(e)
         }
     
+
+# ----------------------------
+# CREATE ADAPTIVE EXAM
+# ----------------------------
+
+@app.post("/create-adaptive-exam")
+def create_adaptive_exam(
+    data: AdaptiveExam,
+    request: Request
+):
+
+    if not verify_admin(request):
+
+        return JSONResponse(
+            status_code=401,
+            content={
+                "message": "Unauthorized"
+            }
+        )
+
+    adaptive_exam_id = str(uuid.uuid4())[:8]
+
+    supabase.table(
+        "adaptive_exams"
+    ).insert({
+
+        "adaptive_exam_id":
+            adaptive_exam_id,
+
+        "topic":
+            data.topic,
+
+        "total_questions":
+            data.total_questions,
+
+        "min_difficulty":
+            data.min_difficulty,
+
+        "max_difficulty":
+            data.max_difficulty
+
+    }).execute()
+
+    return {
+
+        "message":
+            "Adaptive exam created",
+
+        "adaptive_exam_id":
+            adaptive_exam_id
+    }
+
+  
 @app.get("/admin/verify")
 def verify_admin_route(request: Request):
 

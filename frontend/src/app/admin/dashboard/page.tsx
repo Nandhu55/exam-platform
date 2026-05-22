@@ -273,6 +273,13 @@ export default function DashboardPage() {
               Create Exam
             </Link>
 
+<Link
+  href="/admin/create-adaptive-exam"
+  className="rounded-xl bg-orange-600 px-5 py-3 font-semibold hover:bg-orange-500"
+>
+  Adaptive AI Exam
+</Link>
+
             <button
               onClick={handleLogout}
               className="rounded-xl bg-red-600 px-5 py-3 font-semibold hover:bg-red-500"
