@@ -201,8 +201,8 @@ export default function CreateAdaptiveExamPage() {
       }
 
       alert(
-        `Adaptive Exam Created: ${data.adaptive_exam_id}`
-      );
+  `Adaptive Exam Created\n\nLink:\nhttps://exam-platform-max.vercel.app/adaptive-exam/${data.adaptive_exam_id}`
+);
 
     } catch (error) {
 
