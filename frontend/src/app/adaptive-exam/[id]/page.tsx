@@ -15,6 +15,22 @@ export default function AdaptiveExamPage() {
   const [exam, setExam] =
     useState<any>(null);
 
+  const [question, setQuestion] =
+    useState<any>(null);
+
+  const [selectedAnswer, setSelectedAnswer] =
+    useState("");
+
+  const [difficulty, setDifficulty] =
+    useState(1);
+
+  const [questionNumber, setQuestionNumber] =
+    useState(1);
+
+  // =========================
+  // FETCH EXAM
+  // =========================
+
   useEffect(() => {
 
     if (examId) {
@@ -39,6 +55,12 @@ export default function AdaptiveExamPage() {
 
         setExam(data);
 
+        // FIRST QUESTION
+        generateQuestion(
+          data.topic,
+          1
+        );
+
       } catch (error) {
 
         console.error(error);
@@ -49,11 +71,120 @@ export default function AdaptiveExamPage() {
       }
     };
 
+  // =========================
+  // GENERATE QUESTION
+  // =========================
+
+  const generateQuestion =
+    async (
+      topic: string,
+      currentDifficulty: number
+    ) => {
+
+      try {
+
+        setQuestion(null);
+
+        const response =
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/generate-adaptive-question`,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify({
+                topic,
+                difficulty:
+                  currentDifficulty,
+              }),
+            }
+          );
+
+        const data =
+          await response.json();
+
+        setQuestion(data);
+
+      } catch (error) {
+
+        console.error(error);
+      }
+    };
+
+  // =========================
+  // SUBMIT ANSWER
+  // =========================
+
+  const submitAnswer = () => {
+
+    if (!selectedAnswer) {
+
+      alert(
+        "Please select an answer"
+      );
+
+      return;
+    }
+
+    const isCorrect =
+      selectedAnswer ===
+      question.correctAnswer;
+
+    let newDifficulty =
+      difficulty;
+
+    // INCREASE / DECREASE DIFFICULTY
+
+    if (isCorrect) {
+
+      newDifficulty += 1;
+
+    } else {
+
+      newDifficulty -= 1;
+    }
+
+    // LIMIT DIFFICULTY
+
+    if (newDifficulty < 1) {
+
+      newDifficulty = 1;
+    }
+
+    if (newDifficulty > 5) {
+
+      newDifficulty = 5;
+    }
+
+    setDifficulty(
+      newDifficulty
+    );
+
+    setQuestionNumber(
+      questionNumber + 1
+    );
+
+    setSelectedAnswer("");
+
+    generateQuestion(
+      exam.topic,
+      newDifficulty
+    );
+  };
+
+  // =========================
+  // LOADING
+  // =========================
+
   if (loading) {
 
     return (
 
-      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-white text-2xl">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-2xl text-white">
 
         Loading Adaptive Exam...
 
@@ -61,11 +192,15 @@ export default function AdaptiveExamPage() {
     );
   }
 
+  // =========================
+  // NOT FOUND
+  // =========================
+
   if (!exam || exam.error) {
 
     return (
 
-      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-red-400 text-2xl">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-2xl text-red-400">
 
         Adaptive Exam Not Found
 
@@ -73,11 +208,17 @@ export default function AdaptiveExamPage() {
     );
   }
 
+  // =========================
+  // UI
+  // =========================
+
   return (
 
     <main className="min-h-screen bg-[#050816] p-8 text-white">
 
       <div className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-white/5 p-10">
+
+        {/* HEADER */}
 
         <h1 className="text-4xl font-black">
 
@@ -121,25 +262,106 @@ export default function AdaptiveExamPage() {
 
         </p>
 
+        {/* QUESTION CARD */}
+
         <div className="mt-10 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-8">
 
-          <h2 className="text-2xl font-bold text-cyan-400">
+          <div className="flex items-center justify-between">
 
-            Adaptive Engine Ready
+            <h2 className="text-2xl font-bold text-cyan-400">
 
-          </h2>
+              Question
+              {" "}
+              {questionNumber}
 
-          <p className="mt-4 text-gray-300 leading-8">
+            </h2>
 
-            The adaptive AI system is initialized.
+            <p className="text-sm text-gray-400">
 
-            <br />
+              Difficulty:
+              {" "}
+              {difficulty}
 
-            Next step:
-            dynamically generate questions
-            based on student performance.
+            </p>
 
-          </p>
+          </div>
+
+          {question ? (
+
+            <div className="mt-8">
+
+              {/* QUESTION */}
+
+              <h3 className="text-2xl font-semibold leading-10">
+
+                {question.question}
+
+              </h3>
+
+              {/* OPTIONS */}
+
+              <div className="mt-8 space-y-4">
+
+                {["A", "B", "C", "D"].map((option) => (
+
+                  <button
+                    key={option}
+
+                    onClick={() =>
+                      setSelectedAnswer(option)
+                    }
+
+                    className={`w-full rounded-2xl border px-6 py-5 text-left transition-all
+
+                    ${
+                      selectedAnswer === option
+                        ? "border-cyan-400 bg-cyan-500/20"
+                        : "border-white/10 bg-black/30"
+                    }`}
+                  >
+
+                    <span className="font-bold">
+
+                      {option}.
+
+                    </span>
+
+                    {" "}
+
+                    {
+                      question[
+                        `option${option}`
+                      ]
+                    }
+
+                  </button>
+
+                ))}
+
+              </div>
+
+              {/* SUBMIT */}
+
+              <button
+                onClick={submitAnswer}
+                className="mt-8 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
+              >
+
+                Submit Answer
+
+              </button>
+
+            </div>
+
+          ) : (
+
+            <p className="mt-8 text-gray-400">
+
+              Generating AI Question...
+
+            </p>
+
+          )}
 
         </div>
 

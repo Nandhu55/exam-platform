@@ -867,3 +867,100 @@ def verify_admin_route(request: Request):
     return {
         "authenticated": True
     }
+
+
+# ----------------------------
+# GENERATE ADAPTIVE QUESTION
+# ----------------------------
+
+class AdaptiveQuestionRequest(BaseModel):
+
+    topic: str
+    difficulty: int
+
+
+@app.post("/generate-adaptive-question")
+async def generate_adaptive_question(
+    data: AdaptiveQuestionRequest
+):
+
+    difficulty_map = {
+        1: "Easy",
+        2: "Medium",
+        3: "Hard",
+        4: "Expert",
+        5: "Master"
+    }
+
+    difficulty_name = difficulty_map.get(
+        data.difficulty,
+        "Medium"
+    )
+
+    prompt = f"""
+Generate ONLY ONE multiple choice question.
+
+Topic:
+{data.topic}
+
+Difficulty:
+{difficulty_name}
+
+IMPORTANT:
+- Return ONLY valid JSON
+- correctAnswer must be:
+"A", "B", "C", or "D"
+
+FORMAT:
+
+{{
+  "question": "What is Java?",
+  "optionA": "Programming Language",
+  "optionB": "Database",
+  "optionC": "Operating System",
+  "optionD": "Browser",
+  "correctAnswer": "A"
+}}
+"""
+
+    try:
+
+        completion = client.chat.completions.create(
+
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+
+            temperature=0.7
+        )
+
+        response_text = (
+            completion
+            .choices[0]
+            .message
+            .content
+        )
+
+        cleaned_response = (
+            response_text
+            .replace("```json", "")
+            .replace("```", "")
+            .strip()
+        )
+
+        parsed_json = json.loads(
+            cleaned_response
+        )
+
+        return parsed_json
+
+    except Exception as e:
+
+        return {
+            "error": str(e)
+        }
