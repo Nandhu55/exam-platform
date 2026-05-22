@@ -214,17 +214,33 @@ export default function AdaptiveExamPage() {
       newDifficulty
     );
 
-    setQuestionNumber(
-      questionNumber + 1
-    );
+    const nextQuestionNumber =
+  questionNumber + 1;
 
-    setSelectedAnswer("");
+// EXAM FINISHED
 
-    generateQuestion(
-      exam.topic,
-      newDifficulty
-    );
-  };
+if (
+  nextQuestionNumber >
+  exam.total_questions
+) {
+
+  alert(
+    "Adaptive Exam Completed"
+  );
+
+  return;
+}
+
+setQuestionNumber(
+  nextQuestionNumber
+);
+
+setSelectedAnswer("");
+
+generateQuestion(
+  exam.topic,
+  newDifficulty
+);
 
   // =========================
   // LOADING
