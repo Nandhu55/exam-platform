@@ -32,6 +32,22 @@ export default function AdaptiveExamPage() {
 
 const [examFinished, setExamFinished] =
   useState(false);
+  const [studentName, setStudentName] =
+  useState("");
+
+const [rollNumber, setRollNumber] =
+  useState("");
+
+const [college, setCollege] =
+  useState("");
+
+const [section, setSection] =
+  useState("");
+
+const [examStarted, setExamStarted] =
+  useState(false);
+
+
   // =========================
   // FETCH EXAM
   // =========================
@@ -161,7 +177,16 @@ const [examFinished, setExamFinished] =
                 exam.adaptive_exam_id,
 
               participant_name:
-                "Student",
+                studentName,
+
+              roll_number:
+              rollNumber,
+
+college:
+  college,
+
+section:
+  section,
 
               question_number:
                 questionNumber,
@@ -317,14 +342,13 @@ const [examFinished, setExamFinished] =
 
           <p className="mt-6 text-lg leading-9 text-gray-300">
 
-            {percentage >= "80"
-              ? "Excellent performance. Strong conceptual understanding and adaptive learning capability detected."
+            {Number(percentage) >= 80
+  ? "Excellent performance. Strong conceptual understanding and adaptive learning capability detected."
 
-              : percentage >= "50"
-              ? "Good performance. Some medium and advanced concepts require improvement."
+  : Number(percentage) >= 50
+  ? "Good performance. Some medium and advanced concepts require improvement."
 
-              : "Performance needs improvement. Focus on fundamentals and practice adaptive difficulty questions regularly."}
-
+  : "Performance needs improvement. Focus on fundamentals and practice adaptive difficulty questions regularly."}
           </p>
 
         </div>
@@ -339,6 +363,125 @@ const [examFinished, setExamFinished] =
           Go To Home
 
         </button>
+
+      </div>
+
+    </main>
+  );
+}
+
+if (!examStarted) {
+
+  return (
+
+    <main className="flex min-h-screen items-center justify-center bg-[#050816] p-8 text-white">
+
+      <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-white/5 p-10">
+
+        <h1 className="text-4xl font-black">
+
+          Student Verification
+
+        </h1>
+
+        <p className="mt-4 text-gray-400">
+
+          Enter your details to start
+          the adaptive AI examination.
+
+        </p>
+
+        <div className="mt-10 space-y-5">
+
+          <input
+            type="text"
+            placeholder="Student Name"
+
+            value={studentName}
+
+            onChange={(e) =>
+              setStudentName(
+                e.target.value
+              )
+            }
+
+            className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+          />
+
+          <input
+            type="text"
+            placeholder="Roll Number"
+
+            value={rollNumber}
+
+            onChange={(e) =>
+              setRollNumber(
+                e.target.value
+              )
+            }
+
+            className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+          />
+
+          <input
+            type="text"
+            placeholder="College"
+
+            value={college}
+
+            onChange={(e) =>
+              setCollege(
+                e.target.value
+              )
+            }
+
+            className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+          />
+
+          <input
+            type="text"
+            placeholder="Section"
+
+            value={section}
+
+            onChange={(e) =>
+              setSection(
+                e.target.value
+              )
+            }
+
+            className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+          />
+
+          <button
+
+            onClick={() => {
+
+              if (
+                !studentName ||
+                !rollNumber ||
+                !college ||
+                !section
+              ) {
+
+                alert(
+                  "Please fill all details"
+                );
+
+                return;
+              }
+
+              setExamStarted(true);
+            }}
+
+            className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
+          >
+
+            Start Adaptive Exam
+
+          </button>
+
+        </div>
 
       </div>
 

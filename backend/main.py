@@ -976,6 +976,12 @@ class SaveAdaptiveAttempt(BaseModel):
 
     participant_name: str
 
+    roll_number: str
+
+    college: str
+
+    section: str
+
     question_number: int
 
     question: str
@@ -1003,6 +1009,15 @@ def save_adaptive_attempt(
 
         "participant_name":
             data.participant_name,
+
+        "roll_number":
+    data.roll_number,
+
+"college":
+    data.college,
+
+"section":
+    data.section,    
 
         "question_number":
             data.question_number,
