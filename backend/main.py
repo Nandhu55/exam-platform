@@ -965,9 +965,87 @@ FORMAT:
             .strip()
         )
 
-        parsed_json = json.loads(
-            cleaned_response
-        )
+        # ----------------------------
+        # SAFE JSON PARSING
+        # ----------------------------
+
+        try:
+
+            parsed_json = json.loads(
+                cleaned_response
+            )
+
+        except Exception:
+
+            return {
+                "question":
+                    f"What is an important concept in {data.topic}?",
+
+                "optionA":
+                    "Option A",
+
+                "optionB":
+                    "Option B",
+
+                "optionC":
+                    "Option C",
+
+                "optionD":
+                    "Option D",
+
+                "correctAnswer":
+                    "A"
+            }
+
+        # ----------------------------
+        # REQUIRED FIELDS
+        # ----------------------------
+
+        required_fields = [
+
+            "question",
+
+            "optionA",
+
+            "optionB",
+
+            "optionC",
+
+            "optionD",
+
+            "correctAnswer"
+        ]
+
+        # ----------------------------
+        # VALIDATE RESPONSE
+        # ----------------------------
+
+        for field in required_fields:
+
+            if (
+                field not in parsed_json
+                or not parsed_json[field]
+            ):
+
+                return {
+                    "question":
+                        f"What is an important concept in {data.topic}?",
+
+                    "optionA":
+                        "Option A",
+
+                    "optionB":
+                        "Option B",
+
+                    "optionC":
+                        "Option C",
+
+                    "optionD":
+                        "Option D",
+
+                    "correctAnswer":
+                        "A"
+                }
 
         return parsed_json
 
@@ -976,8 +1054,7 @@ FORMAT:
         return {
             "error": str(e)
         }
-
-
+    
 # ----------------------------
 # SAVE ADAPTIVE ATTEMPT
 # ----------------------------
