@@ -411,7 +411,17 @@ export default function AdaptiveExamPage() {
             </p>
 
           </div>
+<button
+  onClick={() =>
+    window.location.href =
+      `/adaptive-report/${studentName}`
+  }
+  className="mt-10 mr-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-10 py-4 text-xl font-bold"
+>
 
+  View Full AI Report
+
+</button>
           <button
             onClick={() =>
               window.location.href = "/"
