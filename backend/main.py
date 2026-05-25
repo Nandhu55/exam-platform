@@ -904,7 +904,9 @@ async def generate_adaptive_question(
     )
 
     prompt = f"""
-Generate ONLY ONE UNIQUE multiple choice question.
+You are an AI exam generator.
+
+Generate ONLY ONE unique MCQ question.
 
 Topic:
 {data.topic}
@@ -912,25 +914,26 @@ Topic:
 Difficulty:
 {difficulty_name}
 
-IMPORTANT RULES:
-- NEVER repeat previous questions
-- Create a completely NEW concept
-- Avoid similar wording
-- Return ONLY valid JSON
-- correctAnswer must be:
-"A", "B", "C", or "D"
-
 PREVIOUS QUESTIONS:
 {previous_questions_text}
 
-FORMAT:
+STRICT RULES:
+1. Return ONLY raw JSON
+2. No markdown
+3. No explanation
+4. No ```json
+5. No extra text
+6. Must contain ALL fields
+7. Never repeat previous questions
+
+JSON FORMAT:
 
 {{
-  "question": "What is Java?",
+  "question": "What is Python?",
   "optionA": "Programming Language",
   "optionB": "Database",
-  "optionC": "Operating System",
-  "optionD": "Browser",
+  "optionC": "Browser",
+  "optionD": "Operating System",
   "correctAnswer": "A"
 }}
 """
@@ -948,7 +951,7 @@ FORMAT:
                 }
             ],
 
-            temperature=1
+            temperature=0.4
         )
 
         response_text = (
