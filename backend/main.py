@@ -1092,51 +1092,62 @@ def save_adaptive_attempt(
     data: SaveAdaptiveAttempt
 ):
 
-    supabase.table(
-        "adaptive_attempts"
-    ).insert({
+    try:
 
-        "adaptive_exam_id":
-            data.adaptive_exam_id,
+        response = supabase.table(
+            "adaptive_attempts"
+        ).insert({
 
-        "participant_name":
-            data.participant_name,
+            "adaptive_exam_id":
+                data.adaptive_exam_id,
 
-        "roll_number":
-    data.roll_number,
+            "participant_name":
+                data.participant_name,
 
-"college":
-    data.college,
+            "roll_number":
+                data.roll_number,
 
-"section":
-    data.section,    
+            "college":
+                data.college,
 
-        "question_number":
-            data.question_number,
+            "section":
+                data.section,
 
-        "question":
-            data.question,
+            "question_number":
+                data.question_number,
 
-        "selected_answer":
-            data.selected_answer,
+            "question":
+                data.question,
 
-        "correct_answer":
-            data.correct_answer,
+            "selected_answer":
+                data.selected_answer,
 
-        "is_correct":
-            data.is_correct,
+            "correct_answer":
+                data.correct_answer,
 
-        "difficulty":
-            data.difficulty
+            "is_correct":
+                data.is_correct,
 
-    }).execute()
+            "difficulty":
+                data.difficulty
 
-    return {
-        "message":
-            "Attempt saved"
-    }       
+        }).execute()
 
+        return {
 
+            "message":
+                "Attempt saved",
+
+            "data":
+                response.data
+        }
+
+    except Exception as e:
+
+        return {
+            "error":
+                str(e)
+        }
 # ----------------------------
 # AI PERFORMANCE REPORT
 # ----------------------------

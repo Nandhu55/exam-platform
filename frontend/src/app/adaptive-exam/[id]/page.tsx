@@ -51,6 +51,8 @@ export default function AdaptiveExamPage() {
   const [examStarted, setExamStarted] =
     useState(false);
 
+    
+
   // =========================
   // FETCH EXAM
   // =========================
@@ -69,8 +71,7 @@ export default function AdaptiveExamPage() {
 
       try {
 
-        const response =
-          await fetch(
+        const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/adaptive-exam/${examId}`
           );
 
@@ -209,59 +210,60 @@ export default function AdaptiveExamPage() {
 
       try {
 
-        await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/save-adaptive-attempt`,
-          {
 
-            method: "POST",
+        const response =
+  await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/save-adaptive-attempt`,
+    {
+      method: "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
 
-            body: JSON.stringify({
+      body: JSON.stringify({
 
-              adaptive_exam_id:
-                exam.adaptive_exam_id,
+        adaptive_exam_id:
+          exam.adaptive_exam_id,
 
-              participant_name:
-                studentName,
+        participant_name:
+          studentName,
 
-              roll_number:
-                rollNumber,
+        roll_number:
+          rollNumber,
 
-              college:
-                college,
+        college:
+          college,
 
-              section:
-                section,
+        section:
+          section,
 
-              question_number:
-                questionNumber,
+        question_number:
+          questionNumber,
 
-              question:
-                question.question,
+        question:
+          question.question,
 
-              selected_answer:
-                selectedAnswer,
+        selected_answer:
+          selectedAnswer,
 
-              correct_answer:
-                question.correctAnswer,
+        correct_answer:
+          question.correctAnswer,
 
-              is_correct:
-                isCorrect,
+        is_correct:
+          isCorrect,
 
-              difficulty:
-                difficulty
-            }),
-          }
-        );
+        difficulty:
+          difficulty
+      }),
+    }
+  );
 
-      } catch (error) {
+const result =
+  await response.json();
 
-        console.error(error);
-      }
+console.log(result);
 
       // =========================
       // DIFFICULTY ENGINE
