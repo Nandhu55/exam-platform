@@ -16,6 +16,9 @@ export default function CreateAdaptiveExamPage() {
   const [maxDifficulty, setMaxDifficulty] =
     useState(5);
 
+  const [generatedLink, setGeneratedLink] =
+    useState("");
+
   return (
 
     <main className="min-h-screen bg-[#060816] p-8 text-white">
@@ -157,69 +160,100 @@ export default function CreateAdaptiveExamPage() {
 
           <button
 
-  onClick={async () => {
+            onClick={async () => {
 
-    try {
+              try {
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/create-adaptive-exam`,
-        {
+                const response = await fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL}/create-adaptive-exam`,
+                  {
 
-          method: "POST",
+                    method: "POST",
 
-          credentials: "include",
+                    credentials: "include",
 
-          headers: {
-            "Content-Type": "application/json",
-          },
+                    headers: {
+                      "Content-Type":
+                        "application/json",
+                    },
 
-          body: JSON.stringify({
+                    body: JSON.stringify({
 
-            topic,
+                      topic,
 
-            total_questions: questions,
+                      total_questions:
+                        questions,
 
-            min_difficulty: minDifficulty,
+                      min_difficulty:
+                        minDifficulty,
 
-            max_difficulty: maxDifficulty,
+                      max_difficulty:
+                        maxDifficulty,
 
-          }),
-        }
-      );
+                    }),
+                  }
+                );
 
-      const data =
-        await response.json();
+                const data =
+                  await response.json();
 
-      if (!response.ok) {
+                if (!response.ok) {
 
-        alert(
-          data.message ||
-          "Failed to create adaptive exam"
-        );
+                  alert(
+                    data.message ||
+                    "Failed to create adaptive exam"
+                  );
 
-        return;
-      }
+                  return;
+                }
 
-      alert(
-  `Adaptive Exam Created\n\nLink:\nhttps://exam-platform-max.vercel.app/adaptive-exam/${data.adaptive_exam_id}`
-);
+                const link =
+                  `https://exam-platform-max.vercel.app/adaptive-exam/${data.adaptive_exam_id}`;
 
-    } catch (error) {
+                setGeneratedLink(link);
 
-      console.error(error);
+              } catch (error) {
 
-      alert(
-        "Something went wrong"
-      );
-    }
-  }}
+                console.error(error);
 
-  className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
->
+                alert(
+                  "Something went wrong"
+                );
+              }
+            }}
 
-  Create Adaptive Exam
+            className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
+          >
 
-</button>
+            Create Adaptive Exam
+
+          </button>
+
+          {/* GENERATED LINK */}
+
+          {
+            generatedLink && (
+
+              <div className="mt-8 rounded-3xl border border-green-500/20 bg-green-500/10 p-8">
+
+                <h2 className="text-4xl font-black text-green-400">
+
+                  Exam Link Generated
+
+                </h2>
+
+                <a
+                  href={generatedLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 block break-all text-2xl font-bold text-cyan-400 underline"
+                >
+                  {generatedLink}
+                </a>
+
+              </div>
+            )
+          }
 
         </div>
 
