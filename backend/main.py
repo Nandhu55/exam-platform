@@ -868,7 +868,6 @@ def verify_admin_route(request: Request):
         "authenticated": True
     }
 
-
 # ----------------------------
 # GENERATE ADAPTIVE QUESTION
 # ----------------------------
@@ -876,7 +875,10 @@ def verify_admin_route(request: Request):
 class AdaptiveQuestionRequest(BaseModel):
 
     topic: str
+
     difficulty: int
+
+    previous_questions: list[str] = []
 
 
 @app.post("/generate-adaptive-question")
@@ -897,8 +899,12 @@ async def generate_adaptive_question(
         "Medium"
     )
 
+    previous_questions_text = "\n".join(
+        data.previous_questions
+    )
+
     prompt = f"""
-Generate ONLY ONE multiple choice question.
+Generate ONLY ONE UNIQUE multiple choice question.
 
 Topic:
 {data.topic}
@@ -906,10 +912,16 @@ Topic:
 Difficulty:
 {difficulty_name}
 
-IMPORTANT:
+IMPORTANT RULES:
+- NEVER repeat previous questions
+- Create a completely NEW concept
+- Avoid similar wording
 - Return ONLY valid JSON
 - correctAnswer must be:
 "A", "B", "C", or "D"
+
+PREVIOUS QUESTIONS:
+{previous_questions_text}
 
 FORMAT:
 
@@ -936,7 +948,7 @@ FORMAT:
                 }
             ],
 
-            temperature=0.7
+            temperature=1
         )
 
         response_text = (

@@ -28,25 +28,28 @@ export default function AdaptiveExamPage() {
     useState(1);
 
   const [score, setScore] =
-  useState(0);
+    useState(0);
 
-const [examFinished, setExamFinished] =
-  useState(false);
+  const [examFinished, setExamFinished] =
+    useState(false);
+
+  const [previousQuestions, setPreviousQuestions] =
+    useState<string[]>([]);
+
   const [studentName, setStudentName] =
-  useState("");
+    useState("");
 
-const [rollNumber, setRollNumber] =
-  useState("");
+  const [rollNumber, setRollNumber] =
+    useState("");
 
-const [college, setCollege] =
-  useState("");
+  const [college, setCollege] =
+    useState("");
 
-const [section, setSection] =
-  useState("");
+  const [section, setSection] =
+    useState("");
 
-const [examStarted, setExamStarted] =
-  useState(false);
-
+  const [examStarted, setExamStarted] =
+    useState(false);
 
   // =========================
   // FETCH EXAM
@@ -76,12 +79,6 @@ const [examStarted, setExamStarted] =
 
         setExam(data);
 
-        // FIRST QUESTION
-        generateQuestion(
-          data.topic,
-          1
-        );
-
       } catch (error) {
 
         console.error(error);
@@ -99,7 +96,8 @@ const [examStarted, setExamStarted] =
   const generateQuestion =
     async (
       topic: string,
-      currentDifficulty: number
+      currentDifficulty: number,
+      previous: string[] = []
     ) => {
 
       try {
@@ -118,9 +116,14 @@ const [examStarted, setExamStarted] =
               },
 
               body: JSON.stringify({
+
                 topic,
+
                 difficulty:
                   currentDifficulty,
+
+                previous_questions:
+                  previous,
               }),
             }
           );
@@ -130,11 +133,57 @@ const [examStarted, setExamStarted] =
 
         setQuestion(data);
 
+        // STORE PREVIOUS QUESTIONS
+
+        if (
+          data.question &&
+          !previous.includes(
+            data.question
+          )
+        ) {
+
+          setPreviousQuestions(
+            (prev) => [
+              ...prev,
+              data.question
+            ]
+          );
+        }
+
       } catch (error) {
 
         console.error(error);
       }
     };
+
+  // =========================
+  // START EXAM
+  // =========================
+
+  const startExam = () => {
+
+    if (
+      !studentName ||
+      !rollNumber ||
+      !college ||
+      !section
+    ) {
+
+      alert(
+        "Please fill all details"
+      );
+
+      return;
+    }
+
+    setExamStarted(true);
+
+    generateQuestion(
+      exam.topic,
+      1,
+      []
+    );
+  };
 
   // =========================
   // SUBMIT ANSWER
@@ -180,13 +229,13 @@ const [examStarted, setExamStarted] =
                 studentName,
 
               roll_number:
-              rollNumber,
+                rollNumber,
 
-college:
-  college,
+              college:
+                college,
 
-section:
-  section,
+              section:
+                section,
 
               question_number:
                 questionNumber,
@@ -223,16 +272,16 @@ section:
 
       if (isCorrect) {
 
-  newDifficulty += 1;
+        newDifficulty += 1;
 
-  setScore(
-    (prev) => prev + 1
-  );
+        setScore(
+          (prev) => prev + 1
+        );
 
-} else {
+      } else {
 
-  newDifficulty -= 1;
-}
+        newDifficulty -= 1;
+      }
 
       // LIMITS
 
@@ -253,19 +302,21 @@ section:
       const nextQuestionNumber =
         questionNumber + 1;
 
+      // =========================
       // EXAM FINISHED
+      // =========================
 
       if (
-  nextQuestionNumber >
-  exam.total_questions
-) {
+        nextQuestionNumber >
+        exam.total_questions
+      ) {
 
-  setExamFinished(true);
+        setExamFinished(true);
 
-  setQuestion(null);
+        setQuestion(null);
 
-  return;
-}
+        return;
+      }
 
       setQuestionNumber(
         nextQuestionNumber
@@ -275,12 +326,13 @@ section:
 
       generateQuestion(
         exam.topic,
-        newDifficulty
+        newDifficulty,
+        previousQuestions
       );
     };
 
   // =========================
-  // LOADING STATE
+  // LOADING
   // =========================
 
   if (loading) {
@@ -295,199 +347,194 @@ section:
     );
   }
 
+  // =========================
+  // EXAM FINISHED
+  // =========================
+
   if (examFinished) {
 
-  const percentage =
-    (
-      (score /
-        exam.total_questions) *
-      100
-    ).toFixed(0);
+    const percentage =
+      (
+        (score /
+          exam.total_questions) *
+        100
+      ).toFixed(0);
 
-  return (
+    return (
 
-    <main className="flex min-h-screen items-center justify-center bg-[#050816] p-8 text-white">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] p-8 text-white">
 
-      <div className="w-full max-w-3xl rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
+        <div className="w-full max-w-3xl rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
 
-        <h1 className="text-5xl font-black text-cyan-400">
+          <h1 className="text-5xl font-black text-cyan-400">
 
-          Adaptive Exam Completed
+            Adaptive Exam Completed
 
-        </h1>
+          </h1>
 
-        <p className="mt-8 text-3xl font-bold">
+          <p className="mt-8 text-3xl font-bold">
 
-          Score:
-          {" "}
-          {score}
-          {" / "}
-          {exam.total_questions}
+            Score:
+            {" "}
+            {score}
+            {" / "}
+            {exam.total_questions}
 
-        </p>
-
-        <p className="mt-4 text-2xl text-green-400">
-
-          {percentage}%
-
-        </p>
-
-        <div className="mt-10 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-8">
-
-          <h2 className="text-2xl font-bold">
-
-            AI Performance Analysis
-
-          </h2>
-
-          <p className="mt-6 text-lg leading-9 text-gray-300">
-
-            {Number(percentage) >= 80
-  ? "Excellent performance. Strong conceptual understanding and adaptive learning capability detected."
-
-  : Number(percentage) >= 50
-  ? "Good performance. Some medium and advanced concepts require improvement."
-
-  : "Performance needs improvement. Focus on fundamentals and practice adaptive difficulty questions regularly."}
           </p>
 
-        </div>
+          <p className="mt-4 text-2xl text-green-400">
 
-        <button
-          onClick={() =>
-            window.location.href = "/"
-          }
-          className="mt-10 rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-10 py-4 text-xl font-bold"
-        >
+            {percentage}%
 
-          Go To Home
+          </p>
 
-        </button>
+          <div className="mt-10 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-8">
 
-      </div>
+            <h2 className="text-2xl font-bold">
 
-    </main>
-  );
-}
+              AI Performance Analysis
 
-if (!examStarted) {
+            </h2>
 
-  return (
+            <p className="mt-6 text-lg leading-9 text-gray-300">
 
-    <main className="flex min-h-screen items-center justify-center bg-[#050816] p-8 text-white">
+              {Number(percentage) >= 80
 
-      <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-white/5 p-10">
+                ? "Excellent performance. Strong conceptual understanding and adaptive learning capability detected."
 
-        <h1 className="text-4xl font-black">
+                : Number(percentage) >= 50
 
-          Student Verification
+                ? "Good performance. Some medium and advanced concepts require improvement."
 
-        </h1>
+                : "Performance needs improvement. Focus on fundamentals and practice adaptive difficulty questions regularly."}
 
-        <p className="mt-4 text-gray-400">
+            </p>
 
-          Enter your details to start
-          the adaptive AI examination.
-
-        </p>
-
-        <div className="mt-10 space-y-5">
-
-          <input
-            type="text"
-            placeholder="Student Name"
-
-            value={studentName}
-
-            onChange={(e) =>
-              setStudentName(
-                e.target.value
-              )
-            }
-
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
-          />
-
-          <input
-            type="text"
-            placeholder="Roll Number"
-
-            value={rollNumber}
-
-            onChange={(e) =>
-              setRollNumber(
-                e.target.value
-              )
-            }
-
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
-          />
-
-          <input
-            type="text"
-            placeholder="College"
-
-            value={college}
-
-            onChange={(e) =>
-              setCollege(
-                e.target.value
-              )
-            }
-
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
-          />
-
-          <input
-            type="text"
-            placeholder="Section"
-
-            value={section}
-
-            onChange={(e) =>
-              setSection(
-                e.target.value
-              )
-            }
-
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
-          />
+          </div>
 
           <button
-
-            onClick={() => {
-
-              if (
-                !studentName ||
-                !rollNumber ||
-                !college ||
-                !section
-              ) {
-
-                alert(
-                  "Please fill all details"
-                );
-
-                return;
-              }
-
-              setExamStarted(true);
-            }}
-
-            className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
+            onClick={() =>
+              window.location.href = "/"
+            }
+            className="mt-10 rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-10 py-4 text-xl font-bold"
           >
 
-            Start Adaptive Exam
+            Go To Home
 
           </button>
 
         </div>
 
-      </div>
+      </main>
+    );
+  }
 
-    </main>
-  );
-}
+  // =========================
+  // STUDENT DETAILS
+  // =========================
+
+  if (!examStarted) {
+
+    return (
+
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] p-8 text-white">
+
+        <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-white/5 p-10">
+
+          <h1 className="text-4xl font-black">
+
+            Student Verification
+
+          </h1>
+
+          <p className="mt-4 text-gray-400">
+
+            Enter your details to start
+            the adaptive AI examination.
+
+          </p>
+
+          <div className="mt-10 space-y-5">
+
+            <input
+              type="text"
+              placeholder="Student Name"
+
+              value={studentName}
+
+              onChange={(e) =>
+                setStudentName(
+                  e.target.value
+                )
+              }
+
+              className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+            />
+
+            <input
+              type="text"
+              placeholder="Roll Number"
+
+              value={rollNumber}
+
+              onChange={(e) =>
+                setRollNumber(
+                  e.target.value
+                )
+              }
+
+              className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+            />
+
+            <input
+              type="text"
+              placeholder="College"
+
+              value={college}
+
+              onChange={(e) =>
+                setCollege(
+                  e.target.value
+                )
+              }
+
+              className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+            />
+
+            <input
+              type="text"
+              placeholder="Section"
+
+              value={section}
+
+              onChange={(e) =>
+                setSection(
+                  e.target.value
+                )
+              }
+
+              className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
+            />
+
+            <button
+
+              onClick={startExam}
+
+              className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
+            >
+
+              Start Adaptive Exam
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </main>
+    );
+  }
+
   // =========================
   // NOT FOUND
   // =========================
@@ -505,7 +552,7 @@ if (!examStarted) {
   }
 
   // =========================
-  // UI
+  // MAIN UI
   // =========================
 
   return (
@@ -513,8 +560,6 @@ if (!examStarted) {
     <main className="min-h-screen bg-[#050816] p-8 text-white">
 
       <div className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-white/5 p-10">
-
-        {/* HEADER */}
 
         <h1 className="text-4xl font-black">
 
