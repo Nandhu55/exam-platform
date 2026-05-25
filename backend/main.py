@@ -1141,16 +1141,16 @@ def save_adaptive_attempt(
 # AI PERFORMANCE REPORT
 # ----------------------------
 
-@app.get("/adaptive-report/{student_name}")
+@app.get("/adaptive-report/{roll_number}")
 async def adaptive_report(
-    student_name: str
+    roll_number: str
 ):
 
     response = supabase.table(
         "adaptive_attempts"
     ).select("*").eq(
-        "participant_name",
-        student_name
+        "roll_number",
+        roll_number
     ).execute()
 
     attempts = response.data
@@ -1158,7 +1158,8 @@ async def adaptive_report(
     if not attempts:
 
         return {
-            "error": "No attempts found"
+            "error":
+            "No attempts found"
         }
 
     total_questions = len(attempts)
@@ -1174,20 +1175,18 @@ async def adaptive_report(
     )
 
     average_difficulty = round(
-
         sum(
             a["difficulty"]
             for a in attempts
         ) / total_questions,
-
         2
     )
 
     prompt = f"""
 Analyze this student performance.
 
-Student:
-{student_name}
+Roll Number:
+{roll_number}
 
 Total Questions:
 {total_questions}
@@ -1235,8 +1234,11 @@ Keep response professional.
 
         return {
 
+            "roll_number":
+                roll_number,
+
             "student_name":
-                student_name,
+                attempts[0]["participant_name"],
 
             "total_questions":
                 total_questions,
@@ -1257,5 +1259,6 @@ Keep response professional.
     except Exception as e:
 
         return {
-            "error": str(e)
+            "error":
+                str(e)
         }

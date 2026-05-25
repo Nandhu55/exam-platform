@@ -398,23 +398,15 @@ export default function AdaptiveExamPage() {
 
             <p className="mt-6 text-lg leading-9 text-gray-300">
 
-              {Number(percentage) >= 80
-
-                ? "Excellent performance. Strong conceptual understanding and adaptive learning capability detected."
-
-                : Number(percentage) >= 50
-
-                ? "Good performance. Some medium and advanced concepts require improvement."
-
-                : "Performance needs improvement. Focus on fundamentals and practice adaptive difficulty questions regularly."}
-
+              Your adaptive exam has been completed successfully.
+Click below to view the full AI-generated performance report.
             </p>
 
           </div>
 <button
   onClick={() =>
     window.location.href =
-      `/adaptive-report/${studentName}`
+      `/adaptive-report/${rollNumber}`
   }
   className="mt-10 mr-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-10 py-4 text-xl font-bold"
 >
