@@ -36,7 +36,7 @@ export default function LoginPage() {
       );
 
       window.location.href =
-        "/";
+  "/student-dashboard";
 
     } catch (error) {
 
