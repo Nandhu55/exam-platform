@@ -269,6 +269,15 @@ console.log(result);
       // DIFFICULTY ENGINE
       // =========================
 
+      } catch (error) {
+
+        console.error(error);
+      }
+
+      // =========================
+      // DIFFICULTY ENGINE
+      // =========================
+
       let newDifficulty =
         difficulty;
 
@@ -304,9 +313,7 @@ console.log(result);
       const nextQuestionNumber =
         questionNumber + 1;
 
-      // =========================
       // EXAM FINISHED
-      // =========================
 
       if (
         nextQuestionNumber >
@@ -332,7 +339,7 @@ console.log(result);
         previousQuestions
       );
     };
-
+    
   // =========================
   // LOADING
   // =========================
