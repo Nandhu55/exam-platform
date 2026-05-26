@@ -1057,6 +1057,32 @@ JSON FORMAT:
         return {
             "error": str(e)
         }
+
+
+
+# ----------------------------
+# GET ALL ADAPTIVE EXAMS
+# ----------------------------
+
+@app.get("/adaptive-exams")
+async def get_all_adaptive_exams():
+
+    try:
+
+        response = (
+            supabase
+            .table("adaptive_exams")
+            .select("*")
+            .execute()
+        )
+
+        return response.data
+
+    except Exception as e:
+
+        return {
+            "error": str(e)
+        }        
     
 # ----------------------------
 # SAVE ADAPTIVE ATTEMPT
