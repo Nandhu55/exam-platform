@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function AdaptiveExamPage() {
 
@@ -36,22 +37,8 @@ export default function AdaptiveExamPage() {
   const [previousQuestions, setPreviousQuestions] =
     useState<string[]>([]);
 
-  const [studentName, setStudentName] =
-    useState("");
-
-  const [rollNumber, setRollNumber] =
-    useState("");
-
-  const [college, setCollege] =
-    useState("");
-
-  const [section, setSection] =
-    useState("");
-
-  const [examStarted, setExamStarted] =
-    useState(false);
-
-    
+  const [student, setStudent] =
+    useState<any>(null);
 
   // =========================
   // FETCH EXAM
@@ -71,7 +58,8 @@ export default function AdaptiveExamPage() {
 
       try {
 
-        const response = await fetch(
+        const response =
+          await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/adaptive-exam/${examId}`
           );
 
@@ -88,6 +76,41 @@ export default function AdaptiveExamPage() {
 
         setLoading(false);
       }
+    };
+
+  // =========================
+  // FETCH STUDENT
+  // =========================
+
+  useEffect(() => {
+
+    fetchStudent();
+
+  }, []);
+
+  const fetchStudent =
+    async () => {
+
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+
+        window.location.href =
+          "/login";
+
+        return;
+      }
+
+      const { data } =
+        await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+      setStudent(data);
     };
 
   // =========================
@@ -134,8 +157,6 @@ export default function AdaptiveExamPage() {
 
         setQuestion(data);
 
-        // STORE PREVIOUS QUESTIONS
-
         if (
           data.question &&
           !previous.includes(
@@ -158,33 +179,25 @@ export default function AdaptiveExamPage() {
     };
 
   // =========================
-  // START EXAM
+  // START FIRST QUESTION
   // =========================
 
-  const startExam = () => {
+  useEffect(() => {
 
     if (
-      !studentName ||
-      !rollNumber ||
-      !college ||
-      !section
+      exam &&
+      student &&
+      !question
     ) {
 
-      alert(
-        "Please fill all details"
+      generateQuestion(
+        exam.topic,
+        1,
+        []
       );
-
-      return;
     }
 
-    setExamStarted(true);
-
-    generateQuestion(
-      exam.topic,
-      1,
-      []
-    );
-  };
+  }, [exam, student]);
 
   // =========================
   // SUBMIT ANSWER
@@ -210,64 +223,59 @@ export default function AdaptiveExamPage() {
 
       try {
 
-
         const response =
-  await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/save-adaptive-attempt`,
-    {
-      method: "POST",
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/save-adaptive-attempt`,
+            {
+              method: "POST",
 
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
 
-      body: JSON.stringify({
+              body: JSON.stringify({
 
-        adaptive_exam_id:
-          exam.adaptive_exam_id,
+                adaptive_exam_id:
+                  exam.adaptive_exam_id,
 
-        participant_name:
-          studentName,
+                participant_name:
+                  student.name,
 
-        roll_number:
-          rollNumber,
+                roll_number:
+                  student.roll_number,
 
-        college:
-          college,
+                college:
+                  student.college,
 
-        section:
-          section,
+                section:
+                  student.section,
 
-        question_number:
-          questionNumber,
+                question_number:
+                  questionNumber,
 
-        question:
-          question.question,
+                question:
+                  question.question,
 
-        selected_answer:
-          selectedAnswer,
+                selected_answer:
+                  selectedAnswer,
 
-        correct_answer:
-          question.correctAnswer,
+                correct_answer:
+                  question.correctAnswer,
 
-        is_correct:
-          isCorrect,
+                is_correct:
+                  isCorrect,
 
-        difficulty:
-          difficulty
-      }),
-    }
-  );
+                difficulty:
+                  difficulty
+              }),
+            }
+          );
 
-const result =
-  await response.json();
+        const result =
+          await response.json();
 
-console.log(result);
-
-      // =========================
-      // DIFFICULTY ENGINE
-      // =========================
+        console.log(result);
 
       } catch (error) {
 
@@ -339,12 +347,15 @@ console.log(result);
         previousQuestions
       );
     };
-    
+
   // =========================
   // LOADING
   // =========================
 
-  if (loading) {
+  if (
+    loading ||
+    !student
+  ) {
 
     return (
 
@@ -408,21 +419,24 @@ console.log(result);
             <p className="mt-6 text-lg leading-9 text-gray-300">
 
               Your adaptive exam has been completed successfully.
-Click below to view the full AI-generated performance report.
+              Click below to view the full AI-generated performance report.
+
             </p>
 
           </div>
-<button
-  onClick={() =>
-    window.location.href =
-      `/adaptive-report/${rollNumber}`
-  }
-  className="mt-10 mr-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-10 py-4 text-xl font-bold"
->
 
-  View Full AI Report
+          <button
+            onClick={() =>
+              window.location.href =
+                `/adaptive-report/${student.roll_number}`
+            }
+            className="mt-10 mr-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-10 py-4 text-xl font-bold"
+          >
 
-</button>
+            View Full AI Report
+
+          </button>
+
           <button
             onClick={() =>
               window.location.href = "/"
@@ -433,112 +447,6 @@ Click below to view the full AI-generated performance report.
             Go To Home
 
           </button>
-
-        </div>
-
-      </main>
-    );
-  }
-
-  // =========================
-  // STUDENT DETAILS
-  // =========================
-
-  if (!examStarted) {
-
-    return (
-
-      <main className="flex min-h-screen items-center justify-center bg-[#050816] p-8 text-white">
-
-        <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-white/5 p-10">
-
-          <h1 className="text-4xl font-black">
-
-            Student Verification
-
-          </h1>
-
-          <p className="mt-4 text-gray-400">
-
-            Enter your details to start
-            the adaptive AI examination.
-
-          </p>
-
-          <div className="mt-10 space-y-5">
-
-            <input
-              type="text"
-              placeholder="Student Name"
-
-              value={studentName}
-
-              onChange={(e) =>
-                setStudentName(
-                  e.target.value
-                )
-              }
-
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
-            />
-
-            <input
-              type="text"
-              placeholder="Roll Number"
-
-              value={rollNumber}
-
-              onChange={(e) =>
-                setRollNumber(
-                  e.target.value
-                )
-              }
-
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
-            />
-
-            <input
-              type="text"
-              placeholder="College"
-
-              value={college}
-
-              onChange={(e) =>
-                setCollege(
-                  e.target.value
-                )
-              }
-
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
-            />
-
-            <input
-              type="text"
-              placeholder="Section"
-
-              value={section}
-
-              onChange={(e) =>
-                setSection(
-                  e.target.value
-                )
-              }
-
-              className="w-full rounded-2xl border border-white/10 bg-black/30 px-5 py-4 outline-none"
-            />
-
-            <button
-
-              onClick={startExam}
-
-              className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
-            >
-
-              Start Adaptive Exam
-
-            </button>
-
-          </div>
 
         </div>
 
@@ -580,13 +488,13 @@ Click below to view the full AI-generated performance report.
 
         <p className="mt-6 text-xl text-cyan-400">
 
-          Exam ID:
+          Welcome,
           {" "}
-          {exam.adaptive_exam_id}
+          {student.name}
 
         </p>
 
-        <p className="mt-4 text-gray-300">
+        <p className="mt-2 text-gray-300">
 
           Topic:
           {" "}
@@ -642,15 +550,11 @@ Click below to view the full AI-generated performance report.
 
             <div className="mt-8">
 
-              {/* QUESTION */}
-
               <h3 className="text-2xl font-semibold leading-10">
 
                 {question.question}
 
               </h3>
-
-              {/* OPTIONS */}
 
               <div className="mt-8 space-y-4">
 
@@ -691,8 +595,6 @@ Click below to view the full AI-generated performance report.
                 ))}
 
               </div>
-
-              {/* SUBMIT */}
 
               <button
                 onClick={submitAnswer}
