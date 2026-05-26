@@ -3,72 +3,115 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+type StudentType = {
+  id: string;
+  name: string;
+  roll_number: string;
+  college: string;
+  section: string;
+};
+
+type ExamType = {
+  adaptive_exam_id: string;
+  topic: string;
+  total_questions: number;
+  min_difficulty: number;
+  max_difficulty: number;
+};
+
 export default function StudentDashboard() {
 
   const [student, setStudent] =
-    useState<any>(null);
+    useState<StudentType | null>(null);
 
   const [exams, setExams] =
-    useState<any[]>([]);
+    useState<ExamType[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
 
   useEffect(() => {
 
-    fetchStudent();
-    fetchExams();
+    fetchData();
 
   }, []);
 
-  const fetchStudent =
+  const fetchData =
     async () => {
 
-      const {
-        data: { user }
-      } = await supabase.auth.getUser();
+      try {
 
-      if (!user) {
+        // =========================
+        // GET LOGGED USER
+        // =========================
 
-        window.location.href =
-          "/login";
+        const {
+          data: { user }
+        } = await supabase.auth.getUser();
 
-        return;
-      }
+        if (!user) {
 
-      const { data } =
-        await supabase
+          window.location.href =
+            "/login";
+
+          return;
+        }
+
+        // =========================
+        // GET PROFILE
+        // =========================
+
+        const {
+          data: profileData,
+          error: profileError
+        } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
           .single();
 
-      setStudent(data);
-    };
+        if (profileError) {
 
-  const fetchExams =
-    async () => {
+          console.error(profileError);
 
-      try {
+          return;
+        }
+
+        setStudent(profileData);
+
+        // =========================
+        // GET EXAMS
+        // =========================
 
         const response =
           await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/adaptive-exams`
           );
 
-        const data =
+        const examData =
           await response.json();
 
-        setExams(data);
+        setExams(examData);
 
       } catch (error) {
 
         console.error(error);
+
+      } finally {
+
+        setLoading(false);
       }
     };
 
-  if (!student) {
+  // =========================
+  // LOADING
+  // =========================
+
+  if (loading) {
 
     return (
 
-      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-white">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-2xl text-white">
 
         Loading Dashboard...
 
@@ -76,11 +119,17 @@ export default function StudentDashboard() {
     );
   }
 
+  // =========================
+  // MAIN UI
+  // =========================
+
   return (
 
     <main className="min-h-screen bg-[#050816] p-8 text-white">
 
       <div className="mx-auto max-w-7xl">
+
+        {/* HEADER */}
 
         <div className="mb-10 rounded-3xl border border-white/10 bg-white/5 p-8">
 
@@ -90,37 +139,39 @@ export default function StudentDashboard() {
 
           </h1>
 
-          <p className="mt-6 text-2xl font-bold">
+          <p className="mt-8 text-3xl font-bold">
 
-            {student.name}
+            {student?.name}
 
           </p>
 
-          <p className="mt-2 text-gray-400">
+          <p className="mt-4 text-gray-300">
 
             Roll Number:
             {" "}
-            {student.roll_number}
+            {student?.roll_number}
 
           </p>
 
-          <p className="mt-2 text-gray-400">
+          <p className="mt-2 text-gray-300">
 
             College:
             {" "}
-            {student.college}
+            {student?.college}
 
           </p>
 
-          <p className="mt-2 text-gray-400">
+          <p className="mt-2 text-gray-300">
 
             Section:
             {" "}
-            {student.section}
+            {student?.section}
 
           </p>
 
         </div>
+
+        {/* EXAMS */}
 
         <h2 className="mb-8 text-4xl font-black">
 
@@ -128,57 +179,72 @@ export default function StudentDashboard() {
 
         </h2>
 
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+        {exams.length === 0 ? (
 
-          {exams.map((exam) => (
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
 
-            <div
-              key={exam.adaptive_exam_id}
-              className="rounded-3xl border border-white/10 bg-white/5 p-8"
-            >
+            <p className="text-xl text-gray-400">
 
-              <h3 className="text-3xl font-black text-cyan-400">
+              No adaptive exams available.
 
-                {exam.topic}
+            </p>
 
-              </h3>
+          </div>
 
-              <p className="mt-6 text-gray-300">
+        ) : (
 
-                Questions:
-                {" "}
-                {exam.total_questions}
+          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
 
-              </p>
+            {exams.map((exam: ExamType) => (
 
-              <p className="mt-2 text-gray-300">
-
-                Difficulty:
-                {" "}
-                {exam.min_difficulty}
-                {" "}
-                →
-                {" "}
-                {exam.max_difficulty}
-
-              </p>
-
-              <button
-                onClick={() =>
-                  window.location.href =
-                    `/adaptive-exam/${exam.adaptive_exam_id}`
-                }
-                className="mt-8 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
+              <div
+                key={exam.adaptive_exam_id}
+                className="rounded-3xl border border-white/10 bg-white/5 p-8"
               >
 
-                Start Exam
+                <h3 className="text-3xl font-black text-cyan-400">
 
-              </button>
+                  {exam.topic}
 
-            </div>
-          ))}
+                </h3>
 
-        </div>
+                <p className="mt-6 text-gray-300">
+
+                  Total Questions:
+                  {" "}
+                  {exam.total_questions}
+
+                </p>
+
+                <p className="mt-2 text-gray-300">
+
+                  Difficulty:
+                  {" "}
+                  {exam.min_difficulty}
+                  {" "}
+                  →
+                  {" "}
+                  {exam.max_difficulty}
+
+                </p>
+
+                <button
+                  onClick={() =>
+                    window.location.href =
+                      `/adaptive-exam/${exam.adaptive_exam_id}`
+                  }
+                  className="mt-8 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
+                >
+
+                  Start Exam
+
+                </button>
+
+              </div>
+            ))}
+
+          </div>
+        )}
 
       </div>
 
