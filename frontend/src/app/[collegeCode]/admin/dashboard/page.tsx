@@ -256,16 +256,16 @@ export default function CollegeAdminDashboard() {
   </h2>
 
   <button
-    onClick={() =>
-      window.location.href =
-        `/${college.college_code}/admin/create-exam`
-    }
-    className="mt-8 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 px-8 py-4 font-bold"
-  >
+  onClick={() =>
+    window.location.href =
+      `/${college.college_code}/admin/create-exam`
+  }
+  className="mt-8 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 px-8 py-4 font-bold"
+>
 
-    Create Exam
+  Create Exam
 
-  </button>
+</button>
 
 </div>
 
