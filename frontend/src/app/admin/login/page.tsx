@@ -56,7 +56,8 @@ export default function AdminLoginPage() {
 
       // SUCCESS
       alert("Login successful");
-
+      document.cookie =
+  "admin-session=true; path=/";
       router.push(
         "/admin/dashboard"
       );

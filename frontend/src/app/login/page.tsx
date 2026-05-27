@@ -34,6 +34,8 @@ export default function LoginPage() {
       alert(
         "Login successful"
       );
+      document.cookie =
+  "student-session=true; path=/";
 
       window.location.href =
   "/student-dashboard";

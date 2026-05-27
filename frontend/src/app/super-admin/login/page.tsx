@@ -17,7 +17,9 @@ export default function SuperAdminLogin() {
         email === "superadmin@examsecure.com" &&
         password === "super123"
       ) {
-
+        
+        document.cookie =
+  "super-admin-session=true; path=/";
         window.location.href =
           "/super-admin/dashboard";
 
