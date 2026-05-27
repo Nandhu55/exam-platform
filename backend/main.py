@@ -146,9 +146,14 @@ class AdminLogin(BaseModel):
 class AdaptiveExam(BaseModel):
 
     topic: str
+
     total_questions: int
+
     min_difficulty: int
+
     max_difficulty: int
+
+    college_code: str
 
 
 class AdaptiveQuestionRequest(BaseModel):
@@ -836,7 +841,10 @@ def create_adaptive_exam(
             data.min_difficulty,
 
         "max_difficulty":
-            data.max_difficulty
+            data.max_difficulty,
+
+        "college_code":
+            data.college_code,  
 
     }).execute()
 

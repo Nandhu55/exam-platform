@@ -190,6 +190,9 @@ export default function CreateAdaptiveExamPage() {
                       max_difficulty:
                         maxDifficulty,
 
+                      college_code:
+                        collegeCode
+
                     }),
                   }
                 );
