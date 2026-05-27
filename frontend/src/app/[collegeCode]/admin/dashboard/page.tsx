@@ -56,19 +56,27 @@ export default function CollegeAdminDashboard() {
 
       try {
 
-        const { data: collegeData, error: collegeError } =
-          await supabase
-            .from("colleges")
-            .select("*")
-            .eq(
-              "college_code",
-              collegeCode
-            )
-            .single();
+        // =========================
+        // FETCH COLLEGE
+        // =========================
+
+        const {
+          data: collegeData,
+          error: collegeError
+        } = await supabase
+          .from("colleges")
+          .select("*")
+          .eq(
+            "college_code",
+            collegeCode
+          )
+          .single();
 
         if (collegeError) {
 
-          console.error(collegeError);
+          console.error(
+            collegeError
+          );
 
           return;
         }
@@ -77,21 +85,26 @@ export default function CollegeAdminDashboard() {
           collegeData as CollegeType
         );
 
+        // =========================
+        // FETCH STUDENTS
+        // =========================
+
         const {
           data: studentData,
           error: studentError
-        } =
-          await supabase
-            .from("profiles")
-            .select("*")
-            .eq(
-              "college_code",
-              collegeCode
-            );
+        } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq(
+            "college_code",
+            collegeCode
+          );
 
         if (studentError) {
 
-          console.error(studentError);
+          console.error(
+            studentError
+          );
 
           return;
         }
@@ -111,11 +124,15 @@ export default function CollegeAdminDashboard() {
       }
     };
 
+  // =========================
+  // LOADING
+  // =========================
+
   if (loading) {
 
     return (
 
-      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-2xl text-white">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-2xl font-bold text-white">
 
         Loading Admin Dashboard...
 
@@ -123,11 +140,15 @@ export default function CollegeAdminDashboard() {
     );
   }
 
+  // =========================
+  // NO COLLEGE
+  // =========================
+
   if (!college) {
 
     return (
 
-      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-2xl text-red-400">
+      <main className="flex min-h-screen items-center justify-center bg-[#050816] text-2xl font-bold text-red-400">
 
         College Not Found
 
@@ -135,8 +156,11 @@ export default function CollegeAdminDashboard() {
     );
   }
 
-  const signupLink =
+  // =========================
+  // SIGNUP LINK
+  // =========================
 
+  const signupLink =
     `${window.location.origin}/student-signup/${college.college_code}`;
 
   return (
@@ -144,6 +168,10 @@ export default function CollegeAdminDashboard() {
     <main className="min-h-screen bg-[#050816] p-8 text-white">
 
       <div className="mx-auto max-w-7xl">
+
+        {/* =========================
+            HEADER
+        ========================= */}
 
         <div className="rounded-3xl border border-cyan-500/20 bg-white/5 p-10">
 
@@ -171,7 +199,13 @@ export default function CollegeAdminDashboard() {
 
         </div>
 
+        {/* =========================
+            CARDS
+        ========================= */}
+
         <div className="mt-10 grid gap-8 md:grid-cols-3">
+
+          {/* TOTAL STUDENTS */}
 
           <div className="rounded-3xl border border-cyan-500/20 bg-cyan-500/10 p-8">
 
@@ -189,6 +223,8 @@ export default function CollegeAdminDashboard() {
 
           </div>
 
+          {/* CREATE EXAM */}
+
           <div className="rounded-3xl border border-purple-500/20 bg-purple-500/10 p-8">
 
             <h2 className="text-2xl font-bold">
@@ -200,7 +236,7 @@ export default function CollegeAdminDashboard() {
             <button
               onClick={() =>
                 window.location.href =
-                  "/create-adaptive-exam"
+                  `/${college.college_code}/admin/create-adaptive-exam`
               }
               className="mt-8 rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-8 py-4 font-bold"
             >
@@ -210,6 +246,8 @@ export default function CollegeAdminDashboard() {
             </button>
 
           </div>
+
+          {/* SIGNUP LINK */}
 
           <div className="rounded-3xl border border-green-500/20 bg-green-500/10 p-8">
 
@@ -222,7 +260,7 @@ export default function CollegeAdminDashboard() {
             <input
               value={signupLink}
               readOnly
-              className="mt-6 w-full rounded-xl border border-white/10 bg-black/40 p-4 text-sm"
+              className="mt-6 w-full rounded-xl border border-white/10 bg-black/40 p-4 text-sm outline-none"
             />
 
             <button
@@ -246,6 +284,10 @@ export default function CollegeAdminDashboard() {
           </div>
 
         </div>
+
+        {/* =========================
+            STUDENTS TABLE
+        ========================= */}
 
         <div className="mt-12 rounded-3xl border border-white/10 bg-white/5 p-10">
 
