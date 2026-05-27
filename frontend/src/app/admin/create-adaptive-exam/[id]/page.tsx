@@ -15,6 +15,8 @@ export default function AdaptiveExamPage() {
   const [exam, setExam] =
     useState<any>(null);
 
+    
+
   useEffect(() => {
 
     if (examId) {
