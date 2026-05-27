@@ -76,8 +76,8 @@ export default function AdminLoginPage() {
         );
 
         router.push(
-          `/${collegeCode}-admin/dashboard`
-        );
+  `/${collegeCode}/admin/dashboard`
+);
 
       } catch (error) {
 
