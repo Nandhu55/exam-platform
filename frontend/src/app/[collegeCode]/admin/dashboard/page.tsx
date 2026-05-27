@@ -229,7 +229,7 @@ export default function CollegeAdminDashboard() {
 
             <h2 className="text-2xl font-bold">
 
-              Create Exams
+              Create-Adaptive-Exams
 
             </h2>
 
@@ -246,6 +246,30 @@ export default function CollegeAdminDashboard() {
             </button>
 
           </div>
+
+          <div className="rounded-3xl border border-orange-500/20 bg-orange-500/10 p-8">
+
+  <h2 className="text-2xl font-bold">
+
+    Create Normal Exams
+
+  </h2>
+
+  <button
+    onClick={() =>
+      window.location.href =
+        `/${college.college_code}/admin/create-exam`
+    }
+    className="mt-8 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 px-8 py-4 font-bold"
+  >
+
+    Create Exam
+
+  </button>
+
+</div>
+
+          
 
           {/* SIGNUP LINK */}
 
