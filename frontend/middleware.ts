@@ -24,23 +24,34 @@ export function middleware(
       "super-admin-session"
     );
 
+  // =========================
+  // SUPER ADMIN PROTECTION
+  // =========================
+
   if (
     path.startsWith(
-      "/student-dashboard"
+      "/super-admin/dashboard"
     ) &&
-    !student
+    !superAdmin
   ) {
 
     return NextResponse.redirect(
       new URL(
-        "/login",
+        "/super-admin/login",
         request.url
       )
     );
   }
 
+  // =========================
+  // COLLEGE ADMIN PROTECTION
+  // =========================
+
   if (
     path.includes("-admin") &&
+    !path.startsWith(
+      "/super-admin"
+    ) &&
     !admin
   ) {
 
@@ -52,16 +63,20 @@ export function middleware(
     );
   }
 
+  // =========================
+  // STUDENT PROTECTION
+  // =========================
+
   if (
     path.startsWith(
-      "/super-admin"
+      "/student-dashboard"
     ) &&
-    !superAdmin
+    !student
   ) {
 
     return NextResponse.redirect(
       new URL(
-        "/super-admin/login",
+        "/login",
         request.url
       )
     );
