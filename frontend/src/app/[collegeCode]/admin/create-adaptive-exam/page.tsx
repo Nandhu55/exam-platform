@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
+
 
 export default function CreateAdaptiveExamPage() {
 
+  const params = useParams();
+
+const collegeCode =
+  params.collegeCode as string;
   const [topic, setTopic] =
     useState("");
 
