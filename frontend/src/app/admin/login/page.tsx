@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+
 import { useRouter } from "next/navigation";
+
+import { supabase } from "@/lib/supabase";
 
 export default function AdminLoginPage() {
 
@@ -16,65 +19,79 @@ export default function AdminLoginPage() {
   const [loading, setLoading] =
     useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin =
+    async () => {
 
-    try {
+      try {
 
-      setLoading(true);
+        setLoading(true);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/login`,
-        {
-          method: "POST",
+        if (
+          !email ||
+          !password
+        ) {
 
-          credentials: "include",
+          alert(
+            "Fill all fields"
+          );
 
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            email,
-            password,
-          }),
+          return;
         }
-      );
 
-      const data =
-        await response.json();
+        const {
+          data,
+          error
+        } = await supabase
+          .from("admins")
+          .select(`
+            *,
+            colleges (
+              college_code
+            )
+          `)
+          .eq("email", email)
+          .eq("password", password)
+          .single();
 
-      // INVALID LOGIN
-      if (!response.ok) {
+        if (
+          error ||
+          !data
+        ) {
+
+          alert(
+            "Invalid Credentials"
+          );
+
+          return;
+        }
+
+        document.cookie =
+          "admin-session=true; path=/";
+
+        const collegeCode =
+          data.colleges.college_code;
 
         alert(
-          data.message ||
-          "Invalid credentials"
+          "Login successful"
         );
 
-        return;
+        router.push(
+          `/${collegeCode}-admin/dashboard`
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Something went wrong"
+        );
+
+      } finally {
+
+        setLoading(false);
       }
-
-      // SUCCESS
-      alert("Login successful");
-      document.cookie =
-  "admin-session=true; path=/";
-      router.push(
-        "/admin/dashboard"
-      );
-
-    } catch (error) {
-
-      console.error(error);
-
-      alert(
-        "Something went wrong"
-      );
-
-    } finally {
-
-      setLoading(false);
-    }
-  };
+    };
 
   return (
 
