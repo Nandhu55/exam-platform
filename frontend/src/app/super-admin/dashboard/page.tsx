@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
 
@@ -18,6 +18,21 @@ export default function SuperAdminDashboard() {
   const [adminPassword, setAdminPassword] =
     useState("");
 
+  useEffect(() => {
+
+    const isLoggedIn =
+      document.cookie.includes(
+        "super-admin-session=true"
+      );
+
+    if (!isLoggedIn) {
+
+      window.location.href =
+        "/super-admin/login";
+    }
+
+  }, []);
+
   const createCollege =
     async () => {
 
@@ -34,10 +49,6 @@ export default function SuperAdminDashboard() {
 
         return;
       }
-
-      // =========================
-      // CREATE COLLEGE
-      // =========================
 
       const {
         data: collegeData,
@@ -72,10 +83,6 @@ export default function SuperAdminDashboard() {
         return;
       }
 
-      // =========================
-      // CREATE ADMIN
-      // =========================
-
       const {
         error: adminError
       } = await supabase
@@ -109,13 +116,9 @@ export default function SuperAdminDashboard() {
         return;
       }
 
-      // =========================
-      // SUCCESS
-      // =========================
-
       alert(
-  "College Created Successfully"
-);
+        "College Created Successfully"
+      );
 
       setCollegeName("");
       setCollegeCode("");
