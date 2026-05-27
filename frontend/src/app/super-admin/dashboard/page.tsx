@@ -113,18 +113,9 @@ export default function SuperAdminDashboard() {
       // SUCCESS
       // =========================
 
-      const signupLink =
-
-        `${window.location.origin}/student-signup/${collegeCode}`;
-
       alert(
-
-`College Created Successfully
-
-Student Signup Link:
-
-${signupLink}`
-      );
+  "College Created Successfully"
+);
 
       setCollegeName("");
       setCollegeCode("");
