@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { supabase } from "@/lib/supabase";
 
 type StudentType = {
@@ -11,7 +12,7 @@ type StudentType = {
   section: string;
 };
 
-type ExamType = {
+type AdaptiveExamType = {
   adaptive_exam_id: string;
   topic: string;
   total_questions: number;
@@ -19,13 +20,23 @@ type ExamType = {
   max_difficulty: number;
 };
 
+type NormalExamType = {
+  exam_code: string;
+  title: string;
+  description: string;
+  duration: number;
+};
+
 export default function StudentDashboard() {
 
   const [student, setStudent] =
     useState<StudentType | null>(null);
 
-  const [exams, setExams] =
-    useState<ExamType[]>([]);
+  const [adaptiveExams, setAdaptiveExams] =
+    useState<AdaptiveExamType[]>([]);
+
+  const [normalExams, setNormalExams] =
+    useState<NormalExamType[]>([]);
 
   const [loading, setLoading] =
     useState(true);
@@ -80,18 +91,36 @@ export default function StudentDashboard() {
         setStudent(profileData);
 
         // =========================
-        // GET EXAMS
+        // FETCH ADAPTIVE EXAMS
         // =========================
 
-        const response =
+        const adaptiveResponse =
           await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/adaptive-exams`
           );
 
-        const examData =
-          await response.json();
+        const adaptiveData =
+          await adaptiveResponse.json();
 
-        setExams(examData);
+        setAdaptiveExams(
+          adaptiveData
+        );
+
+        // =========================
+        // FETCH NORMAL EXAMS
+        // =========================
+
+        const normalResponse =
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/all-exams`
+          );
+
+        const normalData =
+          await normalResponse.json();
+
+        setNormalExams(
+          normalData.exams || []
+        );
 
       } catch (error) {
 
@@ -118,10 +147,6 @@ export default function StudentDashboard() {
       </main>
     );
   }
-
-  // =========================
-  // MAIN UI
-  // =========================
 
   return (
 
@@ -171,15 +196,17 @@ export default function StudentDashboard() {
 
         </div>
 
-        {/* EXAMS */}
+        {/* ========================================= */}
+        {/* ADAPTIVE EXAMS */}
+        {/* ========================================= */}
 
         <h2 className="mb-8 text-4xl font-black">
 
-          Available Adaptive Exams
+          Adaptive Exams
 
         </h2>
 
-        {exams.length === 0 ? (
+        {adaptiveExams.length === 0 ? (
 
           <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
 
@@ -195,7 +222,7 @@ export default function StudentDashboard() {
 
           <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
 
-            {exams.map((exam: ExamType) => (
+            {adaptiveExams.map((exam) => (
 
               <div
                 key={exam.adaptive_exam_id}
@@ -236,7 +263,80 @@ export default function StudentDashboard() {
                   className="mt-8 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-lg font-bold"
                 >
 
-                  Start Exam
+                  Start Adaptive Exam
+
+                </button>
+
+              </div>
+            ))}
+
+          </div>
+        )}
+
+        {/* ========================================= */}
+        {/* NORMAL EXAMS */}
+        {/* ========================================= */}
+
+        <h2 className="mb-8 mt-20 text-4xl font-black">
+
+          Normal Exams
+
+        </h2>
+
+        {normalExams.length === 0 ? (
+
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
+
+            <p className="text-xl text-gray-400">
+
+              No normal exams available.
+
+            </p>
+
+          </div>
+
+        ) : (
+
+          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+
+            {normalExams.map((exam) => (
+
+              <div
+                key={exam.exam_code}
+                className="rounded-3xl border border-white/10 bg-white/5 p-8"
+              >
+
+                <h3 className="text-3xl font-black text-cyan-400">
+
+                  {exam.title}
+
+                </h3>
+
+                <p className="mt-6 text-gray-300">
+
+                  Duration:
+                  {" "}
+                  {exam.duration}
+                  {" "}
+                  mins
+
+                </p>
+
+                <p className="mt-2 text-gray-300 line-clamp-3">
+
+                  {exam.description}
+
+                </p>
+
+                <button
+                  onClick={() =>
+                    window.location.href =
+                      `/exam/${exam.exam_code}`
+                  }
+                  className="mt-8 w-full rounded-2xl bg-gradient-to-r from-pink-600 to-orange-500 px-6 py-4 text-lg font-bold"
+                >
+
+                  Start Normal Exam
 
                 </button>
 

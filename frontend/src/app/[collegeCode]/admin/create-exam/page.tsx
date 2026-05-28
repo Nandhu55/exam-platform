@@ -10,13 +10,17 @@ type Question = {
   optionC: string;
   optionD: string;
   correctAnswer: string;
+  marks?: number;
 };
 
 export default function CreateExamPage() {
 
   const router = useRouter();
 
+  // =========================
   // AI STATES
+  // =========================
+
   const [topic, setTopic] =
     useState("");
 
@@ -29,7 +33,10 @@ export default function CreateExamPage() {
   const [marksPerQuestion, setMarksPerQuestion] =
     useState(1);
 
+  // =========================
   // EXAM STATES
+  // =========================
+
   const [title, setTitle] =
     useState("");
 
@@ -54,10 +61,50 @@ export default function CreateExamPage() {
         optionC: "",
         optionD: "",
         correctAnswer: "",
+        marks: 1,
       },
     ]);
 
+  // =========================
+  // VERIFY ADMIN
+  // =========================
+
+  useEffect(() => {
+
+    const verifyAdmin =
+      async () => {
+
+        try {
+
+          const response =
+            await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/admin/verify`,
+              {
+                credentials: "include",
+              }
+            );
+
+          if (!response.ok) {
+
+            router.push("/admin/login");
+          }
+
+        } catch (error) {
+
+          console.error(error);
+
+          router.push("/admin/login");
+        }
+      };
+
+    verifyAdmin();
+
+  }, [router]);
+
+  // =========================
   // ADD QUESTION
+  // =========================
+
   const addQuestion = () => {
 
     setQuestions([
@@ -69,46 +116,22 @@ export default function CreateExamPage() {
         optionC: "",
         optionD: "",
         correctAnswer: "",
+        marks: marksPerQuestion,
       },
     ]);
   };
 
-  useEffect(() => {
+  // =========================
+  // GENERATE AI QUESTIONS
+  // =========================
 
-  const verifyAdmin =
-    async () => {
-
-      try {
-
-        const response =
-          await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/admin/verify`,
-            {
-              credentials: "include",
-            }
-          );
-
-        if (!response.ok) {
-
-          router.push("/admin/login");
-        }
-
-      } catch {
-
-        router.push("/admin/login");
-      }
-    };
-
-  verifyAdmin();
-
-}, []);
-
-  // AI GENERATION
   const generateWithAI =
     async () => {
 
-      if (!topic) {
+      if (!topic.trim()) {
+
         alert("Enter topic");
+
         return;
       }
 
@@ -116,46 +139,79 @@ export default function CreateExamPage() {
 
         setLoading(true);
 
-        const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL}/generate-ai-questions`,
-  {
-    method: "POST",
+        const response =
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/generate-ai-questions`,
+            {
+              method: "POST",
 
-    credentials: "include",
+              credentials: "include",
 
-    headers: {
-      "Content-Type": "application/json",
-    },
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
 
-    body: JSON.stringify({
-      topic,
-      difficulty,
-      question_count: questionCount,
-      marks: marksPerQuestion,
-    }),
-  }
-);
+              body: JSON.stringify({
+                topic,
+                difficulty,
+                question_count:
+                  questionCount,
+                marks:
+                  marksPerQuestion,
+              }),
+            }
+          );
+
+        if (!response.ok) {
+
+          throw new Error(
+            "AI generation failed"
+          );
+        }
 
         const data =
           await response.json();
 
+        if (
+          !data.questions ||
+          !Array.isArray(
+            data.questions
+          )
+        ) {
+
+          alert(
+            "Invalid AI response"
+          );
+
+          return;
+        }
+
         const formattedQuestions =
-  data.questions.map(
-    (q: any) => ({
-      question: q.question,
+          data.questions.map(
+            (q: any) => ({
+              question:
+                q.question || "",
 
-      optionA: q.optionA,
-      optionB: q.optionB,
-      optionC: q.optionC,
-      optionD: q.optionD,
+              optionA:
+                q.optionA || "",
 
-      correctAnswer:
-        q.correctAnswer,
+              optionB:
+                q.optionB || "",
 
-      marks:
-        marksPerQuestion,
-    })
-  );
+              optionC:
+                q.optionC || "",
+
+              optionD:
+                q.optionD || "",
+
+              correctAnswer:
+                q.correctAnswer || "",
+
+              marks:
+                marksPerQuestion,
+            })
+          );
 
         setQuestions(
           formattedQuestions
@@ -179,11 +235,35 @@ export default function CreateExamPage() {
       }
     };
 
+  // =========================
   // CREATE EXAM
+  // =========================
+
   const handleSubmit =
     async () => {
 
+      if (!title.trim()) {
+
+        alert(
+          "Enter exam title"
+        );
+
+        return;
+      }
+
+      if (
+        questions.length === 0
+      ) {
+
+        alert(
+          "Add at least one question"
+        );
+
+        return;
+      }
+
       const examData = {
+
         title,
         description,
         duration,
@@ -192,23 +272,45 @@ export default function CreateExamPage() {
 
       try {
 
-        const response = await fetch(
-  `${process.env.NEXT_PUBLIC_API_URL}/create-exam`,
-  {
-    method: "POST",
+        setLoading(true);
 
-    credentials: "include",
+        const response =
+          await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/create-exam`,
+            {
+              method: "POST",
 
-    headers: {
-      "Content-Type": "application/json",
-    },
+              credentials: "include",
 
-    body: JSON.stringify(examData),
-  }
-);
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body: JSON.stringify(
+                examData
+              ),
+            }
+          );
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Failed to create exam"
+          );
+        }
 
         const data =
           await response.json();
+
+        if (!data.exam_link) {
+
+          alert(
+            "Exam link not received"
+          );
+
+          return;
+        }
 
         setExamLink(
           data.exam_link
@@ -225,8 +327,16 @@ export default function CreateExamPage() {
         alert(
           "Something went wrong"
         );
+
+      } finally {
+
+        setLoading(false);
       }
     };
+
+  // =========================
+  // UI
+  // =========================
 
   return (
 
@@ -235,6 +345,7 @@ export default function CreateExamPage() {
       <div className="mx-auto max-w-6xl">
 
         {/* HEADER */}
+
         <div className="mb-10">
 
           <h1 className="text-5xl font-black">
@@ -252,6 +363,7 @@ export default function CreateExamPage() {
         </div>
 
         {/* AI SECTION */}
+
         <section className="mb-10 rounded-3xl border border-purple-500/20 bg-gradient-to-br from-purple-900/20 to-cyan-900/10 p-8">
 
           <h2 className="mb-6 text-3xl font-bold text-purple-400">
@@ -284,15 +396,15 @@ export default function CreateExamPage() {
               className="rounded-2xl border border-white/10 bg-black/40 px-5 py-4 outline-none"
             >
 
-              <option>
+              <option value="Easy">
                 Easy
               </option>
 
-              <option>
+              <option value="Medium">
                 Medium
               </option>
 
-              <option>
+              <option value="Hard">
                 Hard
               </option>
 
@@ -332,7 +444,7 @@ export default function CreateExamPage() {
             type="button"
             onClick={generateWithAI}
             disabled={loading}
-            className="mt-8 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-5 text-xl font-bold text-white shadow-2xl transition hover:scale-[1.01]"
+            className="mt-8 w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-5 text-xl font-bold text-white shadow-2xl"
           >
 
             {loading
@@ -344,6 +456,7 @@ export default function CreateExamPage() {
         </section>
 
         {/* EXAM DETAILS */}
+
         <section className="rounded-3xl border border-white/10 bg-white/5 p-8">
 
           <div className="grid gap-6 md:grid-cols-2">
@@ -420,6 +533,7 @@ export default function CreateExamPage() {
         </section>
 
         {/* QUESTIONS */}
+
         <section className="mt-10">
 
           <h2 className="text-3xl font-bold">
@@ -488,19 +602,15 @@ export default function CreateExamPage() {
                             65 + i
                           )}`}
                           value={
-                            question[
-                              option as keyof Question
-                            ] as string
+                            (question as any)[option]
                           }
                           onChange={(e) => {
 
                             const updated =
                               [...questions];
 
-                            updated[index][
-                              option as keyof Question
-                            ] =
-                              e.target.value as never;
+                            (updated[index] as any)[option] =
+                              e.target.value;
 
                             setQuestions(
                               updated
@@ -582,10 +692,12 @@ export default function CreateExamPage() {
         </section>
 
         {/* SUBMIT */}
+
         <section className="mt-12 flex justify-end">
 
           <button
             onClick={handleSubmit}
+            disabled={loading}
             className="rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-10 py-5 text-xl font-bold text-white shadow-2xl"
           >
 
@@ -596,6 +708,7 @@ export default function CreateExamPage() {
         </section>
 
         {/* GENERATED LINK */}
+
         {examLink && (
 
           <div className="mt-10 rounded-3xl border border-green-500/20 bg-green-500/10 p-8">
@@ -609,6 +722,7 @@ export default function CreateExamPage() {
             <a
               href={examLink}
               target="_blank"
+              rel="noopener noreferrer"
               className="mt-4 block text-lg text-cyan-400 underline"
             >
 
