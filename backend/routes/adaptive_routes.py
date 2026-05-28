@@ -168,13 +168,15 @@ async def create_adaptive_exam(
 
                 previous_questions=previous_questions
             )
+
             print(question)
+
             # ============================================
             # SAVE QUESTION TEXT
             # ============================================
 
             previous_questions.append(
-                question["question"]
+                question.get("question", "")
             )
 
             # ============================================
@@ -183,44 +185,46 @@ async def create_adaptive_exam(
 
             question_data = {
 
-    "adaptive_exam_id":
-        adaptive_exam_id,
+                "adaptive_exam_id":
+                    adaptive_exam_id,
 
-    "question":
-        question.get("question", ""),
+                "question":
+                    question.get("question", ""),
 
-    "optionA":
-        question.get("optionA", ""),
+                "optiona":
+                    question.get("optionA", ""),
 
-    "optionB":
-        question.get("optionB", ""),
+                "optionb":
+                    question.get("optionB", ""),
 
-    "optionC":
-        question.get("optionC", ""),
+                "optionc":
+                    question.get("optionC", ""),
 
-    "optionD":
-        question.get("optionD", ""),
+                "optiond":
+                    question.get("optionD", ""),
 
-    "correct_answer":
-        question.get("correctAnswer", ""),
+                "correct_answer":
+                    question.get("correctAnswer", ""),
 
-    "difficulty":
-        current_difficulty,
+                "difficulty":
+                    current_difficulty,
 
-    "college_code":
-        college_code
-}
+                "college_code":
+                    college_code
+            }
 
             # ============================================
             # INSERT QUESTION
             # ============================================
 
-            (
+            insert_response = (
                 supabase
                 .table("adaptive_questions")
                 .insert(question_data)
                 .execute()
             )
+
+            print(insert_response)
 
             generated_questions.append(
                 question_data
