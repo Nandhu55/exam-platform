@@ -168,7 +168,7 @@ async def create_adaptive_exam(
 
                 previous_questions=previous_questions
             )
-
+            print(question)
             # ============================================
             # SAVE QUESTION TEXT
             # ============================================
@@ -183,33 +183,33 @@ async def create_adaptive_exam(
 
             question_data = {
 
-                "adaptive_exam_id":
-                    adaptive_exam_id,
+    "adaptive_exam_id":
+        adaptive_exam_id,
 
-                "question":
-                    question["question"],
+    "question":
+        question.get("question", ""),
 
-                "optionA":
-                    question["optionA"],
+    "optionA":
+        question.get("optionA", ""),
 
-                "optionB":
-                    question["optionB"],
+    "optionB":
+        question.get("optionB", ""),
 
-                "optionC":
-                    question["optionC"],
+    "optionC":
+        question.get("optionC", ""),
 
-                "optionD":
-                    question["optionD"],
+    "optionD":
+        question.get("optionD", ""),
 
-                "correct_answer":
-                    question["correctAnswer"],
+    "correct_answer":
+        question.get("correctAnswer", ""),
 
-                "difficulty":
-                    current_difficulty,
+    "difficulty":
+        current_difficulty,
 
-                "college_code":
-                    college_code
-            }
+    "college_code":
+        college_code
+}
 
             # ============================================
             # INSERT QUESTION
