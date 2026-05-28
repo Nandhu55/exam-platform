@@ -10,8 +10,7 @@ from core.database import supabase
 from core.security import verify_admin
 
 from models.adaptive_models import (
-    AdaptiveExam,
-    AdaptiveQuestionRequest
+    AdaptiveExam
 )
 
 from services.ai_service import (
@@ -22,21 +21,27 @@ import uuid
 
 
 router = APIRouter()
-# ----------------------------
+
+
+# ============================================
 # GET ADAPTIVE EXAM
-# ----------------------------
+# ============================================
 
 @router.get("/adaptive-exam/{adaptive_exam_id}")
 def get_adaptive_exam(
     adaptive_exam_id: str
 ):
 
-    response = supabase.table(
-        "adaptive_exams"
-    ).select("*").eq(
-        "adaptive_exam_id",
-        adaptive_exam_id
-    ).execute()
+    response = (
+        supabase
+        .table("adaptive_exams")
+        .select("*")
+        .eq(
+            "adaptive_exam_id",
+            adaptive_exam_id
+        )
+        .execute()
+    )
 
     if not response.data:
 
@@ -48,9 +53,9 @@ def get_adaptive_exam(
     return response.data[0]
 
 
-# ----------------------------
+# ============================================
 # GET ALL ADAPTIVE EXAMS
-# ----------------------------
+# ============================================
 
 @router.get("/adaptive-exams")
 async def get_all_adaptive_exams():
@@ -64,15 +69,20 @@ async def get_all_adaptive_exams():
 
     return response.data
 
-# ----------------------------
+
+# ============================================
 # CREATE ADAPTIVE EXAM
-# ----------------------------
+# ============================================
 
 @router.post("/create-adaptive-exam")
 async def create_adaptive_exam(
     data: AdaptiveExam,
     request: Request
 ):
+
+    # ============================================
+    # VERIFY ADMIN
+    # ============================================
 
     if not verify_admin(request):
 
@@ -86,13 +96,25 @@ async def create_adaptive_exam(
 
     try:
 
+        # ============================================
+        # CREATE EXAM ID
+        # ============================================
+
         adaptive_exam_id = str(
             uuid.uuid4()
         )
 
+        # ============================================
+        # GET COLLEGE CODE
+        # ============================================
+
         college_code = request.cookies.get(
             "college-code"
         )
+
+        # ============================================
+        # INSERT ADAPTIVE EXAM
+        # ============================================
 
         adaptive_exam_data = {
 
@@ -115,25 +137,49 @@ async def create_adaptive_exam(
                 college_code
         }
 
-        supabase.table(
-            "adaptive_exams"
-        ).insert(
-            adaptive_exam_data
-        ).execute()
+        (
+            supabase
+            .table("adaptive_exams")
+            .insert(adaptive_exam_data)
+            .execute()
+        )
+
+        # ============================================
+        # GENERATE QUESTIONS
+        # ============================================
 
         generated_questions = []
 
-        for difficulty in range(
-            data.min_difficulty,
-            data.max_difficulty + 1
+        previous_questions = []
+
+        current_difficulty = (
+            data.min_difficulty
+        )
+
+        for i in range(
+            data.total_questions
         ):
 
-            question = (
-                await generate_adaptive_ai_question(
-                    topic=data.topic,
-                    difficulty=difficulty
-                )
+            question = await generate_adaptive_ai_question(
+
+                topic=data.topic,
+
+                difficulty=current_difficulty,
+
+                previous_questions=previous_questions
             )
+
+            # ============================================
+            # SAVE QUESTION TEXT
+            # ============================================
+
+            previous_questions.append(
+                question["question"]
+            )
+
+            # ============================================
+            # QUESTION DATA
+            # ============================================
 
             question_data = {
 
@@ -143,28 +189,61 @@ async def create_adaptive_exam(
                 "question":
                     question["question"],
 
-                "options":
-                    question["options"],
+                "optionA":
+                    question["optionA"],
+
+                "optionB":
+                    question["optionB"],
+
+                "optionC":
+                    question["optionC"],
+
+                "optionD":
+                    question["optionD"],
 
                 "correct_answer":
-                    question["correct_answer"],
+                    question["correctAnswer"],
 
                 "difficulty":
-                    difficulty,
+                    current_difficulty,
 
                 "college_code":
                     college_code
             }
 
-            supabase.table(
-                "adaptive_questions"
-            ).insert(
-                question_data
-            ).execute()
+            # ============================================
+            # INSERT QUESTION
+            # ============================================
+
+            (
+                supabase
+                .table("adaptive_questions")
+                .insert(question_data)
+                .execute()
+            )
 
             generated_questions.append(
                 question_data
             )
+
+            # ============================================
+            # UPDATE DIFFICULTY
+            # ============================================
+
+            current_difficulty += 1
+
+            if (
+                current_difficulty >
+                data.max_difficulty
+            ):
+
+                current_difficulty = (
+                    data.min_difficulty
+                )
+
+        # ============================================
+        # SUCCESS RESPONSE
+        # ============================================
 
         return {
 
@@ -183,7 +262,9 @@ async def create_adaptive_exam(
         print(e)
 
         return JSONResponse(
+
             status_code=500,
+
             content={
                 "message":
                     "Failed to create adaptive exam"
