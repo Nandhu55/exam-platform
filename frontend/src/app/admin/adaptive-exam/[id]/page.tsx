@@ -1,14 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { useParams } from "next/navigation";
+
 import { supabase } from "@/lib/supabase";
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL;
 
 export default function AdaptiveExamPage() {
 
   const params = useParams();
 
-  const examId = params.id;
+  const adaptiveExamId =
+    params.adaptiveExamId as string;
 
   const [loading, setLoading] =
     useState(true);
@@ -40,18 +46,18 @@ export default function AdaptiveExamPage() {
   const [student, setStudent] =
     useState<any>(null);
 
-  // =========================
+  // ============================================
   // FETCH EXAM
-  // =========================
+  // ============================================
 
   useEffect(() => {
 
-    if (examId) {
+    if (adaptiveExamId) {
 
       fetchAdaptiveExam();
     }
 
-  }, [examId]);
+  }, [adaptiveExamId]);
 
   const fetchAdaptiveExam =
     async () => {
@@ -60,11 +66,13 @@ export default function AdaptiveExamPage() {
 
         const response =
           await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/adaptive-exam/${examId}`
+            `${API_URL}/adaptive-exam/${adaptiveExamId}`
           );
 
         const data =
           await response.json();
+
+        console.log(data);
 
         setExam(data);
 
@@ -78,9 +86,9 @@ export default function AdaptiveExamPage() {
       }
     };
 
-  // =========================
+  // ============================================
   // FETCH STUDENT
-  // =========================
+  // ============================================
 
   useEffect(() => {
 
@@ -113,9 +121,9 @@ export default function AdaptiveExamPage() {
       setStudent(data);
     };
 
-  // =========================
+  // ============================================
   // GENERATE QUESTION
-  // =========================
+  // ============================================
 
   const generateQuestion =
     async (
@@ -130,7 +138,7 @@ export default function AdaptiveExamPage() {
 
         const response =
           await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/generate-adaptive-question`,
+            `${API_URL}/generate-adaptive-question`,
             {
               method: "POST",
 
@@ -155,6 +163,8 @@ export default function AdaptiveExamPage() {
         const data =
           await response.json();
 
+        console.log(data);
+
         setQuestion(data);
 
         if (
@@ -178,9 +188,9 @@ export default function AdaptiveExamPage() {
       }
     };
 
-  // =========================
+  // ============================================
   // START FIRST QUESTION
-  // =========================
+  // ============================================
 
   useEffect(() => {
 
@@ -192,16 +202,16 @@ export default function AdaptiveExamPage() {
 
       generateQuestion(
         exam.topic,
-        1,
+        difficulty,
         []
       );
     }
 
   }, [exam, student]);
 
-  // =========================
+  // ============================================
   // SUBMIT ANSWER
-  // =========================
+  // ============================================
 
   const submitAnswer =
     async () => {
@@ -219,72 +229,60 @@ export default function AdaptiveExamPage() {
         selectedAnswer ===
         question.correctAnswer;
 
-      // SAVE ATTEMPT
-
       try {
 
-        const response =
-          await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/save-adaptive-attempt`,
-            {
-              method: "POST",
+        await fetch(
+          `${API_URL}/save-adaptive-attempt`,
+          {
+            method: "POST",
 
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
 
-              body: JSON.stringify({
+            body: JSON.stringify({
 
-                adaptive_exam_id:
-                  exam.adaptive_exam_id,
+              adaptive_exam_id:
+                exam.adaptive_exam_id,
 
-                participant_name:
-                  student.name,
+              participant_name:
+                student.name,
 
-                roll_number:
-                  student.roll_number,
+              roll_number:
+                student.roll_number,
 
-                college:
-                  student.college,
+              college:
+                student.college,
 
-                section:
-                  student.section,
+              section:
+                student.section,
 
-                question_number:
-                  questionNumber,
+              question_number:
+                questionNumber,
 
-                question:
-                  question.question,
+              question:
+                question.question,
 
-                selected_answer:
-                  selectedAnswer,
+              selected_answer:
+                selectedAnswer,
 
-                correct_answer:
-                  question.correctAnswer,
+              correct_answer:
+                question.correctAnswer,
 
-                is_correct:
-                  isCorrect,
+              is_correct:
+                isCorrect,
 
-                difficulty:
-                  difficulty
-              }),
-            }
-          );
-
-        const result =
-          await response.json();
-
-        console.log(result);
+              difficulty:
+                difficulty
+            }),
+          }
+        );
 
       } catch (error) {
 
         console.error(error);
       }
-
-      // =========================
-      // DIFFICULTY ENGINE
-      // =========================
 
       let newDifficulty =
         difficulty;
@@ -302,8 +300,6 @@ export default function AdaptiveExamPage() {
         newDifficulty -= 1;
       }
 
-      // LIMITS
-
       if (newDifficulty < 1) {
 
         newDifficulty = 1;
@@ -320,8 +316,6 @@ export default function AdaptiveExamPage() {
 
       const nextQuestionNumber =
         questionNumber + 1;
-
-      // EXAM FINISHED
 
       if (
         nextQuestionNumber >
@@ -348,9 +342,9 @@ export default function AdaptiveExamPage() {
       );
     };
 
-  // =========================
+  // ============================================
   // LOADING
-  // =========================
+  // ============================================
 
   if (
     loading ||
@@ -367,9 +361,9 @@ export default function AdaptiveExamPage() {
     );
   }
 
-  // =========================
+  // ============================================
   // EXAM FINISHED
-  // =========================
+  // ============================================
 
   if (examFinished) {
 
@@ -408,55 +402,15 @@ export default function AdaptiveExamPage() {
 
           </p>
 
-          <div className="mt-10 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-8">
-
-            <h2 className="text-2xl font-bold">
-
-              AI Performance Analysis
-
-            </h2>
-
-            <p className="mt-6 text-lg leading-9 text-gray-300">
-
-              Your adaptive exam has been completed successfully.
-              Click below to view the full AI-generated performance report.
-
-            </p>
-
-          </div>
-
-          <button
-            onClick={() =>
-              window.location.href =
-                `/adaptive-report/${student.roll_number}`
-            }
-            className="mt-10 mr-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-10 py-4 text-xl font-bold"
-          >
-
-            View Full AI Report
-
-          </button>
-
-          <button
-            onClick={() =>
-              window.location.href = "/"
-            }
-            className="mt-10 rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-10 py-4 text-xl font-bold"
-          >
-
-            Go To Home
-
-          </button>
-
         </div>
 
       </main>
     );
   }
 
-  // =========================
-  // NOT FOUND
-  // =========================
+  // ============================================
+  // EXAM NOT FOUND
+  // ============================================
 
   if (!exam || exam.error) {
 
@@ -470,9 +424,9 @@ export default function AdaptiveExamPage() {
     );
   }
 
-  // =========================
+  // ============================================
   // MAIN UI
-  // =========================
+  // ============================================
 
   return (
 
@@ -509,20 +463,6 @@ export default function AdaptiveExamPage() {
           {exam.total_questions}
 
         </p>
-
-        <p className="mt-2 text-gray-300">
-
-          Difficulty Range:
-          {" "}
-          {exam.min_difficulty}
-          {" "}
-          →
-          {" "}
-          {exam.max_difficulty}
-
-        </p>
-
-        {/* QUESTION CARD */}
 
         <div className="mt-10 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-8">
 

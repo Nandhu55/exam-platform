@@ -274,3 +274,22 @@ async def create_adaptive_exam(
                     "Failed to create adaptive exam"
             }
         )
+
+@router.get("/adaptive-questions/{adaptive_exam_id}")
+async def get_adaptive_questions(
+    adaptive_exam_id: str
+):
+
+    response = (
+        supabase
+        .table("adaptive_questions")
+        .select("*")
+        .eq(
+            "adaptive_exam_id",
+            adaptive_exam_id
+        )
+        .execute()
+    )
+
+    return response.data
+
