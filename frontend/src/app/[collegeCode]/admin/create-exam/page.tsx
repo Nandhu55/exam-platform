@@ -45,7 +45,11 @@ export default function CreateExamPage() {
 
   const [duration, setDuration] =
     useState(30);
+  const [price, setPrice] =
+  useState(0);
 
+  const [isPaid, setIsPaid] =
+  useState(false);
   const [examLink, setExamLink] =
     useState("");
 
@@ -264,11 +268,15 @@ export default function CreateExamPage() {
 
       const examData = {
 
-        title,
-        description,
-        duration,
-        questions,
-      };
+  title,
+  description,
+  duration,
+
+  price,
+  is_paid: isPaid,
+
+  questions,
+};
 
       try {
 
@@ -506,7 +514,47 @@ export default function CreateExamPage() {
 
             </div>
 
-          </div>
+          
+          <div>
+  <label className="mb-2 block text-sm text-gray-300">
+    Paid Exam
+  </label>
+
+  <select
+    value={isPaid ? "paid" : "free"}
+    onChange={(e) => {
+  const paid = e.target.value === "paid";
+  setIsPaid(paid);
+
+  if (!paid) {
+    setPrice(0);
+  }
+}}
+    className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none"
+  >
+    <option value="free">Free Exam</option>
+    <option value="paid">Paid Exam</option>
+  </select>
+</div>
+
+<div>
+  <label className="mb-2 block text-sm text-gray-300">
+    Price (₹)
+  </label>
+
+  <input
+    type="number"
+    min={0}
+    value={price}
+    disabled={!isPaid}
+    onChange={(e) =>
+      setPrice(Number(e.target.value))
+    }
+    className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 outline-none disabled:opacity-50"
+    placeholder="Enter price"
+  />
+</div>
+</div>
 
           <div className="mt-6">
 
