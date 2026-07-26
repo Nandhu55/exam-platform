@@ -342,3 +342,21 @@ def get_attempt(
     ).execute()
 
     return response.data[0]
+
+# ----------------------------
+# GET ALL EXAMS
+# ----------------------------
+
+@router.get("/all-exams")
+def get_all_exams():
+
+    response = (
+        supabase
+        .table("exams")
+        .select("*")
+        .execute()
+    )
+
+    return {
+        "exams": response.data
+    }
