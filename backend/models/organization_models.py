@@ -11,7 +11,6 @@ class OrganizationCreate(BaseModel):
 
 class OrganizationSetup(BaseModel):
     organization_name: str
-    slug: str
     admin_name: str
     admin_email: str
     admin_password: str

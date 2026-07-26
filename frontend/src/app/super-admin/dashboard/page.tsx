@@ -2,211 +2,160 @@
 
 import { useEffect, useState } from "react";
 
-import { supabase } from "@/lib/supabase";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export default function SuperAdminDashboard() {
+export default function SuperAdminPage() {
+  const [organizations, setOrganizations] = useState([]);
 
-  const [collegeName, setCollegeName] =
-    useState("");
+  const [form, setForm] = useState({
+    organization_name: "",
+    admin_name: "",
+    admin_email: "",
+    admin_password: "",
+  });
 
-  const [collegeCode, setCollegeCode] =
-    useState("");
-
-  const [adminEmail, setAdminEmail] =
-    useState("");
-
-  const [adminPassword, setAdminPassword] =
-    useState("");
+  async function loadOrganizations() {
+    const res = await fetch(`${API}/organizations`);
+    const data = await res.json();
+    setOrganizations(data.organizations || []);
+  }
 
   useEffect(() => {
-
-    const isLoggedIn =
-      document.cookie.includes(
-        "super-admin-session=true"
-      );
-
-    if (!isLoggedIn) {
-
-      window.location.href =
-        "/super-admin/login";
-    }
-
+    loadOrganizations();
   }, []);
 
-  const createCollege =
-    async () => {
+  async function createOrganization(e: React.FormEvent) {
+    e.preventDefault();
 
-      if (
-        !collegeName ||
-        !collegeCode ||
-        !adminEmail ||
-        !adminPassword
-      ) {
+    const res = await fetch(`${API}/organizations/setup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(form),
+    });
 
-        alert(
-          "Fill all fields"
-        );
+    if (!res.ok) {
+      alert("Failed to create organization");
+      return;
+    }
 
-        return;
-      }
+    alert("Organization Created");
 
-      const {
-        data: collegeData,
-        error: collegeError
-      } = await supabase
-        .from("colleges")
-        .insert([
-          {
-            college_name:
-              collegeName,
+    setForm({
+      organization_name: "",
+      admin_name: "",
+      admin_email: "",
+      admin_password: "",
+    });
 
-            college_code:
-              collegeCode,
-
-            admin_email:
-              adminEmail
-          }
-        ])
-        .select()
-        .single();
-
-      if (collegeError) {
-
-        console.error(
-          collegeError
-        );
-
-        alert(
-          "College creation failed"
-        );
-
-        return;
-      }
-
-      const {
-        error: adminError
-      } = await supabase
-        .from("admins")
-        .insert([
-          {
-            email:
-              adminEmail,
-
-            password:
-              adminPassword,
-
-            college_id:
-              collegeData.id,
-
-            role:
-              "admin"
-          }
-        ]);
-
-      if (adminError) {
-
-        console.error(
-          adminError
-        );
-
-        alert(
-          "Admin creation failed"
-        );
-
-        return;
-      }
-
-      alert(
-        "College Created Successfully"
-      );
-
-      setCollegeName("");
-      setCollegeCode("");
-      setAdminEmail("");
-      setAdminPassword("");
-    };
+    loadOrganizations();
+  }
 
   return (
+    <div className="max-w-7xl mx-auto p-8">
 
-    <main className="min-h-screen bg-[#050816] p-8 text-white">
+      <h1 className="text-4xl font-bold mb-8">
+        Super Admin Dashboard
+      </h1>
 
-      <div className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-white/5 p-10">
+      <form
+        onSubmit={createOrganization}
+        className="bg-white rounded-xl shadow p-6 space-y-4 mb-10"
+      >
 
-        <h1 className="text-5xl font-black text-cyan-400">
+        <input
+          className="border p-3 rounded w-full"
+          placeholder="Organization Name"
+          value={form.organization_name}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              organization_name: e.target.value,
+            })
+          }
+        />
 
-          Super Admin Dashboard
+        <input
+          className="border p-3 rounded w-full"
+          placeholder="Admin Name"
+          value={form.admin_name}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              admin_name: e.target.value,
+            })
+          }
+        />
 
-        </h1>
+        <input
+          className="border p-3 rounded w-full"
+          placeholder="Admin Email"
+          value={form.admin_email}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              admin_email: e.target.value,
+            })
+          }
+        />
 
-        <p className="mt-6 text-xl text-gray-300">
+        <input
+          type="password"
+          className="border p-3 rounded w-full"
+          placeholder="Password"
+          value={form.admin_password}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              admin_password: e.target.value,
+            })
+          }
+        />
 
-          Create Colleges & Admin Accounts
+        <button
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg"
+        >
+          Create Organization
+        </button>
 
-        </p>
+      </form>
 
-        <div className="mt-10 space-y-6">
+      <div className="bg-white rounded-xl shadow">
 
-          <input
-            type="text"
-            placeholder="College Name"
-            value={collegeName}
-            onChange={(e) =>
-              setCollegeName(
-                e.target.value
-              )
-            }
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-6 py-4 text-lg outline-none"
-          />
+        <table className="w-full">
 
-          <input
-            type="text"
-            placeholder="College Code (example: au)"
-            value={collegeCode}
-            onChange={(e) =>
-              setCollegeCode(
-                e.target.value
-              )
-            }
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-6 py-4 text-lg outline-none"
-          />
+          <thead>
 
-          <input
-            type="email"
-            placeholder="Admin Email"
-            value={adminEmail}
-            onChange={(e) =>
-              setAdminEmail(
-                e.target.value
-              )
-            }
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-6 py-4 text-lg outline-none"
-          />
+            <tr className="border-b">
 
-          <input
-            type="password"
-            placeholder="Admin Password"
-            value={adminPassword}
-            onChange={(e) =>
-              setAdminPassword(
-                e.target.value
-              )
-            }
-            className="w-full rounded-2xl border border-white/10 bg-black/30 px-6 py-4 text-lg outline-none"
-          />
+              <th className="p-4 text-left">Name</th>
+              <th className="p-4 text-left">Slug</th>
 
-          <button
-            onClick={createCollege}
-            className="w-full rounded-2xl bg-gradient-to-r from-purple-600 to-cyan-500 px-6 py-4 text-xl font-bold"
-          >
+            </tr>
 
-            Create College
+          </thead>
 
-          </button>
+          <tbody>
 
-        </div>
+            {organizations.map((org: any) => (
+
+              <tr key={org.id} className="border-b">
+
+                <td className="p-4">{org.name}</td>
+
+                <td className="p-4">{org.slug}</td>
+
+              </tr>
+
+            ))}
+
+          </tbody>
+
+        </table>
 
       </div>
 
-    </main>
+    </div>
   );
 }
