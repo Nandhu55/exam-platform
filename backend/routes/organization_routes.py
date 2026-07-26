@@ -11,7 +11,12 @@ class OrganizationCreate(BaseModel):
     email: str
     phone: str | None = None
     website: str | None = None
-
+class OrganizationSetup(BaseModel):
+    organization_name: str
+    slug: str
+    admin_name: str
+    admin_email: str
+    admin_password: str
 
 @router.get("/")
 def get_organizations():
@@ -61,3 +66,33 @@ def create_organization(data: OrganizationCreate):
         "message": "Organization created successfully",
         "organization": response.data
     }
+
+@router.post("/setup")
+def setup_organization(data: OrganizationSetup):
+
+    # Check duplicate slug
+    existing = (
+        supabase.table("organizations")
+        .select("id")
+        .eq("slug", data.slug)
+        .execute()
+    )
+
+    if existing.data:
+        raise HTTPException(
+            status_code=400,
+            detail="Organization already exists"
+        )
+
+    # 1 Create Organization
+    org = (
+        supabase.table("organizations")
+        .insert({
+            "name": data.organization_name,
+            "slug": data.slug
+        })
+        .execute()
+    )
+
+    organization = org.data[0]
+    organization_id = organization["id"]
