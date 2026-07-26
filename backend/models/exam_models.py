@@ -54,3 +54,9 @@ class Candidate(BaseModel):
     section: str
 
     college: str
+
+
+class CheckoutRequest(BaseModel):
+    exam_id: str
+    title: str
+    amount: float    

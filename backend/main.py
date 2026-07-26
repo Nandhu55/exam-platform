@@ -8,6 +8,9 @@ from routes.analytics_routes import router as analytics_router
 from routes.cheating_routes import router as cheating_router
 from routes.report_routes import router as report_router
 from routes.ai_routes import router as ai_router
+from stripe_service import create_checkout_session
+from routes.payment_routes import router as payment_router
+
 app = FastAPI()
 
 app.add_middleware(
@@ -38,6 +41,8 @@ app.include_router(cheating_router)
 app.include_router(report_router)
 
 app.include_router(ai_router)
+
+app.include_router(payment_router)
 
 @app.get("/")
 def home():
