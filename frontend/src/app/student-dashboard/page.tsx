@@ -25,6 +25,9 @@ type NormalExamType = {
   title: string;
   description: string;
   duration: number;
+
+  price: number;
+  is_paid: boolean;
 };
 
 export default function StudentDashboard() {

@@ -8,7 +8,6 @@ from routes.analytics_routes import router as analytics_router
 from routes.cheating_routes import router as cheating_router
 from routes.report_routes import router as report_router
 from routes.ai_routes import router as ai_router
-from stripe_service import create_checkout_session
 from routes.payment_routes import router as payment_router
 
 app = FastAPI()

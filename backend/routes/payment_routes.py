@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from models.exam_models import CheckoutRequest
-from stripe_service import create_checkout_session
+from services.stripe_service import create_checkout_session
 
 router = APIRouter()
 
