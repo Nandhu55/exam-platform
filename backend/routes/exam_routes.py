@@ -43,15 +43,20 @@ def create_exam(
 
     exam_code = generate_exam_code()
 
+
     supabase.table("exams").insert({
 
-        "exam_code": exam_code,
+    "exam_code": exam_code,
 
-        "title": exam.title,
+    "title": exam.title,
 
-        "description": exam.description,
+    "description": exam.description,
 
-        "duration": exam.duration
+    "duration": exam.duration,
+
+    "price": exam.price,
+
+    "is_paid": exam.is_paid
 
     }).execute()
 

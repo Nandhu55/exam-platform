@@ -18,16 +18,15 @@ class Question(BaseModel):
 
 
 class Exam(BaseModel):
-
     title: str
-
     description: str
-
     duration: int
 
+    # New fields
+    price: int = 0
+    is_paid: bool = False
+
     questions: List[Question]
-
-
 class Submission(BaseModel):
 
     exam_code: str
