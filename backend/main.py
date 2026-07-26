@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routes.auth_routes import router as auth_router
 from routes.exam_routes import router as exam_router
+from routes.organization_routes import router as organization_router
 from routes.adaptive_routes import router as adaptive_router
 from routes.analytics_routes import router as analytics_router
 from routes.cheating_routes import router as cheating_router
@@ -30,6 +31,8 @@ app.add_middleware(
 app.include_router(auth_router)
 
 app.include_router(exam_router)
+
+app.include_router(organization_router)
 
 app.include_router(adaptive_router)
 
