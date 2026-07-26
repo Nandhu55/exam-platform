@@ -84,7 +84,7 @@ def setup_organization(data: OrganizationSetup):
             detail="Organization already exists"
         )
 
-    # 1 Create Organization
+    # Create Organization
     org = (
         supabase.table("organizations")
         .insert({
@@ -96,3 +96,14 @@ def setup_organization(data: OrganizationSetup):
 
     organization = org.data[0]
     organization_id = organization["id"]
+
+    # Create Organization Settings
+    supabase.table("organization_settings").insert({
+        "organization_id": organization_id,
+        "support_email": data.admin_email
+    }).execute()
+
+    return {
+        "message": "Organization setup completed",
+        "organization": organization
+    }
